@@ -115,7 +115,7 @@ public class ReflectionTests
 			
 			String targetMethod, targetField;
 			Class<?>[] targetConstructorParameters;
-			if ((targetField = annotation.field()) != null && !targetField.isBlank())
+			if ((targetField = annotation.field()) != null && !targetField.trim().isEmpty())
 			{
 				result.add(getFieldTest(targetClass, targetField, annotation.message(), messagePrefix));
 			}
@@ -123,7 +123,7 @@ public class ReflectionTests
 			{
 				result.add(getConstructorTest(targetClass, annotation.message(), messagePrefix, targetConstructorParameters));
 			}
-			else if ((targetMethod = annotation.method()) != null && !targetMethod.isBlank())
+			else if ((targetMethod = annotation.method()) != null && !targetMethod.trim().isEmpty())
 			{
 				Class<?>[] targetMethodParameters = annotation.methodParameters();
 				result.add(getMethodTest(targetClass, targetMethod, annotation.message(), messagePrefix, targetMethodParameters));
@@ -143,7 +143,7 @@ public class ReflectionTests
 			Field field = FieldUtils.getField(targetClass, targetField, true);
 			if (field == null)
 			{
-				if (userMessage != null && !userMessage.isBlank())
+				if (userMessage != null && !userMessage.trim().isEmpty())
 				{
 					throw new AssertionFailedError(userMessage);
 				}
@@ -165,7 +165,7 @@ public class ReflectionTests
 			}
 			catch (NoSuchMethodException | SecurityException e)
 			{
-				if (userMessage != null && !userMessage.isBlank())
+				if (userMessage != null && !userMessage.trim().isEmpty())
 				{
 					throw new AssertionFailedError(userMessage);
 				}
@@ -185,7 +185,7 @@ public class ReflectionTests
 			Method method = MethodUtils.getAccessibleMethod(targetClass, targetMethod, parameterClasses);
 			if (method == null)
 			{
-				if (userMessage != null && !userMessage.isBlank())
+				if (userMessage != null && !userMessage.trim().isEmpty())
 				{
 					throw new AssertionFailedError(userMessage);
 				}
