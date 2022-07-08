@@ -113,3 +113,7 @@ Some notices to the code above:
 	</configuration>
 </plugin>
 ```
+
+### More samples
+
+You can find yet another example of usage JUnit5-Extensions [here: bvfalcon/juni5-test](https://github.com/bvfalcon/junit5-test).
