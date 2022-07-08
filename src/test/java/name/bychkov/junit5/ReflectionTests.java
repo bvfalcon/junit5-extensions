@@ -324,15 +324,19 @@ public class ReflectionTests
 		for (CheckConstructor annotation : list)
 		{
 			Class<?> targetClass = annotation.targetClass();
+			if (targetClass == null)
+			{
+				throw new TestAbortedException(String.format("Annotation @%s must define the attribute targetClass", CheckConstructor.class.getSimpleName()));
+			}
 			
 			Class<?>[] targetConstructorParameters;
 			if ((targetConstructorParameters = annotation.parameters()) != null && targetConstructorParameters.length != 0)
 			{
-				result.add(getConstructorTest(targetClass, annotation.message(), messagePrefix, targetConstructorParameters));
+				result.add(getDynamicConstructorTest(targetClass, annotation.message(), messagePrefix, targetConstructorParameters));
 			}
 			else
 			{
-				result.add(getConstructorTest(targetClass, annotation.message(), messagePrefix));
+				result.add(getDynamicConstructorTest(targetClass, annotation.message(), messagePrefix));
 			}
 		}
 		return result;
@@ -344,12 +348,16 @@ public class ReflectionTests
 		for (CheckMethod annotation : list)
 		{
 			Class<?> targetClass = annotation.targetClass();
+			if (targetClass == null)
+			{
+				throw new TestAbortedException(String.format("Annotation @%s must define the attribute targetClass", CheckMethod.class.getSimpleName()));
+			}
 			
 			String targetMethod = annotation.value();
 			if (targetMethod != null && !targetMethod.trim().isEmpty())
 			{
 				Class<?>[] targetMethodParameters = annotation.parameters();
-				result.add(getMethodTest(targetClass, targetMethod, annotation.message(), messagePrefix, targetMethodParameters));
+				result.add(getDynamicMethodTest(targetClass, targetMethod, annotation.message(), messagePrefix, targetMethodParameters));
 			}
 			else
 			{
@@ -365,11 +373,15 @@ public class ReflectionTests
 		for (CheckField annotation : list)
 		{
 			Class<?> targetClass = annotation.targetClass();
+			if (targetClass == null)
+			{
+				throw new TestAbortedException(String.format("Annotation @%s must define the attribute targetClass", CheckField.class.getSimpleName()));
+			}
 			
 			String targetField = annotation.value();
 			if (targetField != null && !targetField.trim().isEmpty())
 			{
-				result.add(getFieldTest(targetClass, targetField, annotation.message(), messagePrefix));
+				result.add(getDynamicFieldTest(targetClass, targetField, annotation.message(), messagePrefix));
 			}
 			else
 			{
@@ -379,7 +391,7 @@ public class ReflectionTests
 		return result;
 	}
 	
-	private DynamicTest getFieldTest(Class<?> targetClass, String targetField, String userMessage, String messagePrefix)
+	private DynamicTest getDynamicFieldTest(Class<?> targetClass, String targetField, String userMessage, String messagePrefix)
 	{
 		return DynamicTest.dynamicTest("testField", () ->
 		{
@@ -398,7 +410,7 @@ public class ReflectionTests
 		});
 	}
 	
-	private DynamicTest getConstructorTest(Class<?> targetClass, String userMessage, String messagePrefix, Class<?>... parameterClasses)
+	private DynamicTest getDynamicConstructorTest(Class<?> targetClass, String userMessage, String messagePrefix, Class<?>... parameterClasses)
 	{
 		return DynamicTest.dynamicTest("testConstructor", () ->
 		{
@@ -421,7 +433,7 @@ public class ReflectionTests
 		});
 	}
 	
-	private DynamicTest getMethodTest(Class<?> targetClass, String targetMethod, String userMessage, String messagePrefix, Class<?>... parameterClasses)
+	private DynamicTest getDynamicMethodTest(Class<?> targetClass, String targetMethod, String userMessage, String messagePrefix, Class<?>... parameterClasses)
 	{
 		return DynamicTest.dynamicTest("testMethod", () ->
 		{
