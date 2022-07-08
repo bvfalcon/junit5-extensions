@@ -12,17 +12,12 @@ import java.lang.annotation.Target;
 
 @Retention(RUNTIME)
 @Target({ TYPE, CONSTRUCTOR, FIELD, METHOD })
-@Repeatable(CheckExistence.List.class)
-public @interface CheckExistence
+@Repeatable(CheckConstructor.List.class)
+public @interface CheckConstructor
 {
 	Class<?> targetClass();
 	
-	Class<?>[] constructorParameters() default {};
-	
-	String method() default "";
-	Class<?>[] methodParameters() default {};
-	
-	String field() default "";
+	Class<?>[] parameters() default {};
 	
 	String message() default "";
 	
@@ -30,6 +25,6 @@ public @interface CheckExistence
 	@Target({ TYPE, CONSTRUCTOR, FIELD, METHOD })
 	@interface List
 	{
-		CheckExistence[] value();
+		CheckConstructor[] value();
 	}
 }

@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,6 +17,7 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 import org.opentest4j.AssertionFailedError;
+import org.opentest4j.TestAbortedException;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
@@ -32,57 +32,132 @@ public class ReflectionTests
 		Reflections reflections = new Reflections(new ConfigurationBuilder().forPackages("")
 				.setScanners(Scanners.TypesAnnotated, Scanners.ConstructorsAnnotated, Scanners.FieldsAnnotated, Scanners.MethodsAnnotated));
 		
-		Set<Class<?>> annotatedTypes = reflections.getTypesAnnotatedWith(CheckExistence.List.class);
-		annotatedTypes.addAll(reflections.getTypesAnnotatedWith(CheckExistence.class));
-		for (Class<?> item : annotatedTypes)
+		// TYPE
+		Set<Class<?>> typesAnnotatedWithConstructor = reflections.getTypesAnnotatedWith(CheckConstructor.List.class);
+		typesAnnotatedWithConstructor.addAll(reflections.getTypesAnnotatedWith(CheckConstructor.class));
+		for (Class<?> item : typesAnnotatedWithConstructor)
 		{
-			String messagePrefix = String.format("Annotation @%s on type %s warns:", CheckExistence.class.getSimpleName(), item.getCanonicalName());
-			List<CheckExistence> list = readAnnotations(item);
-			tests.addAll(getDynamicTests(list, messagePrefix));
+			String messagePrefix = String.format("Annotation @%s on type %s warns:", CheckConstructor.class.getSimpleName(), item.getCanonicalName());
+			List<CheckConstructor> list = readConstructorAnnotations(item);
+			tests.addAll(getDynamicConstructorTests(list, messagePrefix));
 		}
 		
-		@SuppressWarnings("rawtypes")
-		Set<Constructor> annotatedConstructors = reflections.getConstructorsAnnotatedWith(CheckExistence.List.class);
-		annotatedConstructors.addAll(reflections.getConstructorsAnnotatedWith(CheckExistence.class));
-		for (Constructor<?> item : annotatedConstructors)
+		Set<Class<?>> typesAnnotatedWithField = reflections.getTypesAnnotatedWith(CheckField.List.class);
+		typesAnnotatedWithField.addAll(reflections.getTypesAnnotatedWith(CheckField.class));
+		for (Class<?> item : typesAnnotatedWithField)
 		{
-			String messagePrefix = String.format("Annotation @%s on constructor %s warns:", CheckExistence.class.getSimpleName(), item.getName());
-			List<CheckExistence> list = readAnnotations(item);
-			tests.addAll(getDynamicTests(list, messagePrefix));
+			String messagePrefix = String.format("Annotation @%s on type %s warns:", CheckField.class.getSimpleName(), item.getCanonicalName());
+			List<CheckField> list = readFieldAnnotations(item);
+			tests.addAll(getDynamicFieldTests(list, messagePrefix));
 		}
 		
-		Set<Method> annotatedMethods = reflections.getMethodsAnnotatedWith(CheckExistence.List.class);
-		annotatedMethods.addAll(reflections.getMethodsAnnotatedWith(CheckExistence.class));
-		for (Method item : annotatedMethods)
+		Set<Class<?>> typesAnnotatedWithMethod = reflections.getTypesAnnotatedWith(CheckMethod.List.class);
+		typesAnnotatedWithMethod.addAll(reflections.getTypesAnnotatedWith(CheckMethod.class));
+		for (Class<?> item : typesAnnotatedWithMethod)
 		{
-			String messagePrefix = String.format("Annotation @%s on method %s warns:", CheckExistence.class.getSimpleName(), item.getName());
-			List<CheckExistence> list = readAnnotations(item);
-			tests.addAll(getDynamicTests(list, messagePrefix));
+			String messagePrefix = String.format("Annotation @%s on type %s warns:", CheckMethod.class.getSimpleName(), item.getCanonicalName());
+			List<CheckMethod> list = readMethodAnnotations(item);
+			tests.addAll(getDynamicMethodTests(list, messagePrefix));
 		}
 		
-		Set<Field> annotatedFields = reflections.getFieldsAnnotatedWith(CheckExistence.List.class);
-		annotatedFields.addAll(reflections.getFieldsAnnotatedWith(CheckExistence.class));
-		for (Field item : annotatedFields)
+		// CONSTRUCTOR
+		Set<Constructor> constructorsAnnotatedWithConstructor = reflections.getConstructorsAnnotatedWith(CheckConstructor.List.class);
+		constructorsAnnotatedWithConstructor.addAll(reflections.getConstructorsAnnotatedWith(CheckConstructor.class));
+		for (Constructor item : constructorsAnnotatedWithConstructor)
 		{
-			String messagePrefix = String.format("Annotation @%s on field %s warns:", CheckExistence.class.getSimpleName(), item.getName());
-			List<CheckExistence> list = readAnnotations(item);
-			tests.addAll(getDynamicTests(list, messagePrefix));
+			String messagePrefix = String.format("Annotation @%s on constructor %s warns:", CheckConstructor.class.getSimpleName(), item.getName());
+			List<CheckConstructor> list = readConstructorAnnotations(item);
+			tests.addAll(getDynamicConstructorTests(list, messagePrefix));
+		}
+		
+		Set<Constructor> constructorsAnnotatedWithField = reflections.getConstructorsAnnotatedWith(CheckField.List.class);
+		constructorsAnnotatedWithField.addAll(reflections.getConstructorsAnnotatedWith(CheckField.class));
+		for (Constructor item : constructorsAnnotatedWithField)
+		{
+			String messagePrefix = String.format("Annotation @%s on constructor %s warns:", CheckField.class.getSimpleName(), item.getName());
+			List<CheckField> list = readFieldAnnotations(item);
+			tests.addAll(getDynamicFieldTests(list, messagePrefix));
+		}
+		
+		Set<Constructor> constructorsAnnotatedWithMethod = reflections.getConstructorsAnnotatedWith(CheckMethod.List.class);
+		constructorsAnnotatedWithMethod.addAll(reflections.getConstructorsAnnotatedWith(CheckMethod.class));
+		for (Constructor item : constructorsAnnotatedWithMethod)
+		{
+			String messagePrefix = String.format("Annotation @%s on constructor %s warns:", CheckMethod.class.getSimpleName(), item.getName());
+			List<CheckMethod> list = readMethodAnnotations(item);
+			tests.addAll(getDynamicMethodTests(list, messagePrefix));
+		}
+		
+		// METHOD
+		Set<Method> methodsAnnotatedWithConstructor = reflections.getMethodsAnnotatedWith(CheckConstructor.List.class);
+		methodsAnnotatedWithConstructor.addAll(reflections.getMethodsAnnotatedWith(CheckConstructor.class));
+		for (Method item : methodsAnnotatedWithConstructor)
+		{
+			String messagePrefix = String.format("Annotation @%s on method %s warns:", CheckConstructor.class.getSimpleName(), item.getName());
+			List<CheckConstructor> list = readConstructorAnnotations(item);
+			tests.addAll(getDynamicConstructorTests(list, messagePrefix));
+		}
+		
+		Set<Method> methodsAnnotatedWithField = reflections.getMethodsAnnotatedWith(CheckField.List.class);
+		methodsAnnotatedWithField.addAll(reflections.getMethodsAnnotatedWith(CheckField.class));
+		for (Method item : methodsAnnotatedWithField)
+		{
+			String messagePrefix = String.format("Annotation @%s on method %s warns:", CheckField.class.getSimpleName(), item.getName());
+			List<CheckField> list = readFieldAnnotations(item);
+			tests.addAll(getDynamicFieldTests(list, messagePrefix));
+		}
+		
+		Set<Method> methodsAnnotatedWithMethod = reflections.getMethodsAnnotatedWith(CheckMethod.List.class);
+		methodsAnnotatedWithMethod.addAll(reflections.getMethodsAnnotatedWith(CheckMethod.class));
+		for (Method item : methodsAnnotatedWithMethod)
+		{
+			String messagePrefix = String.format("Annotation @%s on method %s warns:", CheckMethod.class.getSimpleName(), item.getName());
+			List<CheckMethod> list = readMethodAnnotations(item);
+			tests.addAll(getDynamicMethodTests(list, messagePrefix));
+		}
+		
+		// FIELD
+		Set<Field> fieldsAnnotatedWithConstructor = reflections.getFieldsAnnotatedWith(CheckConstructor.List.class);
+		fieldsAnnotatedWithConstructor.addAll(reflections.getFieldsAnnotatedWith(CheckConstructor.class));
+		for (Field item : fieldsAnnotatedWithConstructor)
+		{
+			String messagePrefix = String.format("Annotation @%s on field %s warns:", CheckConstructor.class.getSimpleName(), item.getName());
+			List<CheckConstructor> list = readConstructorAnnotations(item);
+			tests.addAll(getDynamicConstructorTests(list, messagePrefix));
+		}
+		
+		Set<Field> fieldsAnnotatedWithField = reflections.getFieldsAnnotatedWith(CheckField.List.class);
+		fieldsAnnotatedWithField.addAll(reflections.getFieldsAnnotatedWith(CheckField.class));
+		for (Field item : fieldsAnnotatedWithField)
+		{
+			String messagePrefix = String.format("Annotation @%s on field %s warns:", CheckField.class.getSimpleName(), item.getName());
+			List<CheckField> list = readFieldAnnotations(item);
+			tests.addAll(getDynamicFieldTests(list, messagePrefix));
+		}
+		
+		Set<Field> fieldsAnnotatedWithMethod = reflections.getFieldsAnnotatedWith(CheckMethod.List.class);
+		fieldsAnnotatedWithMethod.addAll(reflections.getFieldsAnnotatedWith(CheckMethod.class));
+		for (Field item : fieldsAnnotatedWithMethod)
+		{
+			String messagePrefix = String.format("Annotation @%s on field %s warns:", CheckMethod.class.getSimpleName(), item.getName());
+			List<CheckMethod> list = readMethodAnnotations(item);
+			tests.addAll(getDynamicMethodTests(list, messagePrefix));
 		}
 		
 		return tests;
 	}
 	
-	private List<CheckExistence> readAnnotations(Supplier<CheckExistence.List> wrapperSupplier, Supplier<CheckExistence> annotationSupplier)
+	private List<CheckConstructor> readConstructorAnnotations(Class<?> type)
 	{
-		List<CheckExistence> result = new ArrayList<>();
-		CheckExistence.List wrapper = wrapperSupplier.get();
+		List<CheckConstructor> result = new ArrayList<>();
+		CheckConstructor.List wrapper = type.getAnnotation(CheckConstructor.List.class);
 		if (wrapper != null)
 		{
 			result.addAll(Arrays.asList(wrapper.value()));
 		}
 		else
 		{
-			CheckExistence annotation2 = annotationSupplier.get();
+			CheckConstructor annotation2 = type.getAnnotation(CheckConstructor.class);
 			if (annotation2 != null)
 			{
 				result.add(annotation2);
@@ -91,46 +166,214 @@ public class ReflectionTests
 		return result;
 	}
 	
-	private List<CheckExistence> readAnnotations(Field field)
+	private List<CheckConstructor> readConstructorAnnotations(Executable executable)
 	{
-		return readAnnotations(() -> field.getAnnotation(CheckExistence.List.class), () -> field.getAnnotation(CheckExistence.class));
+		List<CheckConstructor> result = new ArrayList<>();
+		CheckConstructor.List wrapper = executable.getAnnotation(CheckConstructor.List.class);
+		if (wrapper != null)
+		{
+			result.addAll(Arrays.asList(wrapper.value()));
+		}
+		else
+		{
+			CheckConstructor annotation2 = executable.getAnnotation(CheckConstructor.class);
+			if (annotation2 != null)
+			{
+				result.add(annotation2);
+			}
+		}
+		return result;
 	}
 	
-	private List<CheckExistence> readAnnotations(Class<?> type)
+	private List<CheckConstructor> readConstructorAnnotations(Field field)
 	{
-		return readAnnotations(() -> type.getAnnotation(CheckExistence.List.class), () -> type.getAnnotation(CheckExistence.class));
+		List<CheckConstructor> result = new ArrayList<>();
+		CheckConstructor.List wrapper = field.getAnnotation(CheckConstructor.List.class);
+		if (wrapper != null)
+		{
+			result.addAll(Arrays.asList(wrapper.value()));
+		}
+		else
+		{
+			CheckConstructor annotation2 = field.getAnnotation(CheckConstructor.class);
+			if (annotation2 != null)
+			{
+				result.add(annotation2);
+			}
+		}
+		return result;
 	}
 	
-	private List<CheckExistence> readAnnotations(Executable executable)
+	private List<CheckField> readFieldAnnotations(Class<?> type)
 	{
-		return readAnnotations(() -> executable.getAnnotation(CheckExistence.List.class), () -> executable.getAnnotation(CheckExistence.class));
+		List<CheckField> result = new ArrayList<>();
+		CheckField.List wrapper = type.getAnnotation(CheckField.List.class);
+		if (wrapper != null)
+		{
+			result.addAll(Arrays.asList(wrapper.value()));
+		}
+		else
+		{
+			CheckField annotation2 = type.getAnnotation(CheckField.class);
+			if (annotation2 != null)
+			{
+				result.add(annotation2);
+			}
+		}
+		return result;
 	}
 	
-	private Collection<DynamicTest> getDynamicTests(List<CheckExistence> list, String messagePrefix)
+	private List<CheckField> readFieldAnnotations(Executable executable)
+	{
+		List<CheckField> result = new ArrayList<>();
+		CheckField.List wrapper = executable.getAnnotation(CheckField.List.class);
+		if (wrapper != null)
+		{
+			result.addAll(Arrays.asList(wrapper.value()));
+		}
+		else
+		{
+			CheckField annotation2 = executable.getAnnotation(CheckField.class);
+			if (annotation2 != null)
+			{
+				result.add(annotation2);
+			}
+		}
+		return result;
+	}
+	
+	private List<CheckField> readFieldAnnotations(Field field)
+	{
+		List<CheckField> result = new ArrayList<>();
+		CheckField.List wrapper = field.getAnnotation(CheckField.List.class);
+		if (wrapper != null)
+		{
+			result.addAll(Arrays.asList(wrapper.value()));
+		}
+		else
+		{
+			CheckField annotation2 = field.getAnnotation(CheckField.class);
+			if (annotation2 != null)
+			{
+				result.add(annotation2);
+			}
+		}
+		return result;
+	}
+	
+	private List<CheckMethod> readMethodAnnotations(Class<?> type)
+	{
+		List<CheckMethod> result = new ArrayList<>();
+		CheckMethod.List wrapper = type.getAnnotation(CheckMethod.List.class);
+		if (wrapper != null)
+		{
+			result.addAll(Arrays.asList(wrapper.value()));
+		}
+		else
+		{
+			CheckMethod annotation2 = type.getAnnotation(CheckMethod.class);
+			if (annotation2 != null)
+			{
+				result.add(annotation2);
+			}
+		}
+		return result;
+	}
+	
+	private List<CheckMethod> readMethodAnnotations(Executable executable)
+	{
+		List<CheckMethod> result = new ArrayList<>();
+		CheckMethod.List wrapper = executable.getAnnotation(CheckMethod.List.class);
+		if (wrapper != null)
+		{
+			result.addAll(Arrays.asList(wrapper.value()));
+		}
+		else
+		{
+			CheckMethod annotation2 = executable.getAnnotation(CheckMethod.class);
+			if (annotation2 != null)
+			{
+				result.add(annotation2);
+			}
+		}
+		return result;
+	}
+	
+	private List<CheckMethod> readMethodAnnotations(Field field)
+	{
+		List<CheckMethod> result = new ArrayList<>();
+		CheckMethod.List wrapper = field.getAnnotation(CheckMethod.List.class);
+		if (wrapper != null)
+		{
+			result.addAll(Arrays.asList(wrapper.value()));
+		}
+		else
+		{
+			CheckMethod annotation2 = field.getAnnotation(CheckMethod.class);
+			if (annotation2 != null)
+			{
+				result.add(annotation2);
+			}
+		}
+		return result;
+	}
+	
+	private Collection<DynamicTest> getDynamicConstructorTests(List<CheckConstructor> list, String messagePrefix)
 	{
 		Collection<DynamicTest> result = new ArrayList<>(list.size());
-		for (CheckExistence annotation : list)
+		for (CheckConstructor annotation : list)
 		{
 			Class<?> targetClass = annotation.targetClass();
 			
-			String targetMethod, targetField;
 			Class<?>[] targetConstructorParameters;
-			if ((targetField = annotation.field()) != null && !targetField.trim().isEmpty())
-			{
-				result.add(getFieldTest(targetClass, targetField, annotation.message(), messagePrefix));
-			}
-			else if ((targetConstructorParameters = annotation.constructorParameters()) != null && targetConstructorParameters.length != 0)
+			if ((targetConstructorParameters = annotation.parameters()) != null && targetConstructorParameters.length != 0)
 			{
 				result.add(getConstructorTest(targetClass, annotation.message(), messagePrefix, targetConstructorParameters));
-			}
-			else if ((targetMethod = annotation.method()) != null && !targetMethod.trim().isEmpty())
-			{
-				Class<?>[] targetMethodParameters = annotation.methodParameters();
-				result.add(getMethodTest(targetClass, targetMethod, annotation.message(), messagePrefix, targetMethodParameters));
 			}
 			else
 			{
 				result.add(getConstructorTest(targetClass, annotation.message(), messagePrefix));
+			}
+		}
+		return result;
+	}
+	
+	private Collection<DynamicTest> getDynamicMethodTests(List<CheckMethod> list, String messagePrefix)
+	{
+		Collection<DynamicTest> result = new ArrayList<>(list.size());
+		for (CheckMethod annotation : list)
+		{
+			Class<?> targetClass = annotation.targetClass();
+			
+			String targetMethod = annotation.value();
+			if (targetMethod != null && !targetMethod.trim().isEmpty())
+			{
+				Class<?>[] targetMethodParameters = annotation.parameters();
+				result.add(getMethodTest(targetClass, targetMethod, annotation.message(), messagePrefix, targetMethodParameters));
+			}
+			else
+			{
+				throw new TestAbortedException(String.format("Annotation @%s must define the attribute value", CheckMethod.class.getSimpleName()));
+			}
+		}
+		return result;
+	}
+	
+	private Collection<DynamicTest> getDynamicFieldTests(List<CheckField> list, String messagePrefix)
+	{
+		Collection<DynamicTest> result = new ArrayList<>(list.size());
+		for (CheckField annotation : list)
+		{
+			Class<?> targetClass = annotation.targetClass();
+			
+			String targetField = annotation.value();
+			if (targetField != null && !targetField.trim().isEmpty())
+			{
+				result.add(getFieldTest(targetClass, targetField, annotation.message(), messagePrefix));
+			}
+			else
+			{
+				throw new TestAbortedException(String.format("Annotation @%s must define the attribute value", CheckField.class.getSimpleName()));
 			}
 		}
 		return result;
