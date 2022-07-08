@@ -1,5 +1,6 @@
 package name.bychkov.junit5;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
@@ -8,7 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -149,173 +152,68 @@ public class ReflectionTests
 	
 	private List<CheckConstructor> readConstructorAnnotations(Class<?> type)
 	{
-		List<CheckConstructor> result = new ArrayList<>();
-		CheckConstructor.List wrapper = type.getAnnotation(CheckConstructor.List.class);
-		if (wrapper != null)
-		{
-			result.addAll(Arrays.asList(wrapper.value()));
-		}
-		else
-		{
-			CheckConstructor annotation2 = type.getAnnotation(CheckConstructor.class);
-			if (annotation2 != null)
-			{
-				result.add(annotation2);
-			}
-		}
-		return result;
+		return readAnnotations(() -> type.getAnnotation(CheckConstructor.class),
+				() -> Optional.ofNullable(type.getAnnotation(CheckConstructor.List.class)).map(o -> o.value()).orElse(new CheckConstructor[0]));
 	}
 	
 	private List<CheckConstructor> readConstructorAnnotations(Executable executable)
 	{
-		List<CheckConstructor> result = new ArrayList<>();
-		CheckConstructor.List wrapper = executable.getAnnotation(CheckConstructor.List.class);
-		if (wrapper != null)
-		{
-			result.addAll(Arrays.asList(wrapper.value()));
-		}
-		else
-		{
-			CheckConstructor annotation2 = executable.getAnnotation(CheckConstructor.class);
-			if (annotation2 != null)
-			{
-				result.add(annotation2);
-			}
-		}
-		return result;
+		return readAnnotations(() -> executable.getAnnotation(CheckConstructor.class),
+				() -> Optional.ofNullable(executable.getAnnotation(CheckConstructor.List.class)).map(o -> o.value()).orElse(new CheckConstructor[0]));
 	}
 	
 	private List<CheckConstructor> readConstructorAnnotations(Field field)
 	{
-		List<CheckConstructor> result = new ArrayList<>();
-		CheckConstructor.List wrapper = field.getAnnotation(CheckConstructor.List.class);
-		if (wrapper != null)
-		{
-			result.addAll(Arrays.asList(wrapper.value()));
-		}
-		else
-		{
-			CheckConstructor annotation2 = field.getAnnotation(CheckConstructor.class);
-			if (annotation2 != null)
-			{
-				result.add(annotation2);
-			}
-		}
-		return result;
+		return readAnnotations(() -> field.getAnnotation(CheckConstructor.class),
+				() -> Optional.ofNullable(field.getAnnotation(CheckConstructor.List.class)).map(o -> o.value()).orElse(new CheckConstructor[0]));
 	}
 	
 	private List<CheckField> readFieldAnnotations(Class<?> type)
 	{
-		List<CheckField> result = new ArrayList<>();
-		CheckField.List wrapper = type.getAnnotation(CheckField.List.class);
-		if (wrapper != null)
-		{
-			result.addAll(Arrays.asList(wrapper.value()));
-		}
-		else
-		{
-			CheckField annotation2 = type.getAnnotation(CheckField.class);
-			if (annotation2 != null)
-			{
-				result.add(annotation2);
-			}
-		}
-		return result;
+		return readAnnotations(() -> type.getAnnotation(CheckField.class),
+				() -> Optional.ofNullable(type.getAnnotation(CheckField.List.class)).map(o -> o.value()).orElse(new CheckField[0]));
 	}
 	
 	private List<CheckField> readFieldAnnotations(Executable executable)
 	{
-		List<CheckField> result = new ArrayList<>();
-		CheckField.List wrapper = executable.getAnnotation(CheckField.List.class);
-		if (wrapper != null)
-		{
-			result.addAll(Arrays.asList(wrapper.value()));
-		}
-		else
-		{
-			CheckField annotation2 = executable.getAnnotation(CheckField.class);
-			if (annotation2 != null)
-			{
-				result.add(annotation2);
-			}
-		}
-		return result;
+		return readAnnotations(() -> executable.getAnnotation(CheckField.class),
+				() -> Optional.ofNullable(executable.getAnnotation(CheckField.List.class)).map(o -> o.value()).orElse(new CheckField[0]));
 	}
 	
 	private List<CheckField> readFieldAnnotations(Field field)
 	{
-		List<CheckField> result = new ArrayList<>();
-		CheckField.List wrapper = field.getAnnotation(CheckField.List.class);
-		if (wrapper != null)
-		{
-			result.addAll(Arrays.asList(wrapper.value()));
-		}
-		else
-		{
-			CheckField annotation2 = field.getAnnotation(CheckField.class);
-			if (annotation2 != null)
-			{
-				result.add(annotation2);
-			}
-		}
-		return result;
+		return readAnnotations(() -> field.getAnnotation(CheckField.class),
+				() -> Optional.ofNullable(field.getAnnotation(CheckField.List.class)).map(o -> o.value()).orElse(new CheckField[0]));
 	}
 	
 	private List<CheckMethod> readMethodAnnotations(Class<?> type)
 	{
-		List<CheckMethod> result = new ArrayList<>();
-		CheckMethod.List wrapper = type.getAnnotation(CheckMethod.List.class);
-		if (wrapper != null)
-		{
-			result.addAll(Arrays.asList(wrapper.value()));
-		}
-		else
-		{
-			CheckMethod annotation2 = type.getAnnotation(CheckMethod.class);
-			if (annotation2 != null)
-			{
-				result.add(annotation2);
-			}
-		}
-		return result;
+		return readAnnotations(() -> type.getAnnotation(CheckMethod.class),
+				() -> Optional.ofNullable(type.getAnnotation(CheckMethod.List.class)).map(o -> o.value()).orElse(new CheckMethod[0]));
 	}
 	
 	private List<CheckMethod> readMethodAnnotations(Executable executable)
 	{
-		List<CheckMethod> result = new ArrayList<>();
-		CheckMethod.List wrapper = executable.getAnnotation(CheckMethod.List.class);
-		if (wrapper != null)
+		return readAnnotations(() -> executable.getAnnotation(CheckMethod.class),
+				() -> Optional.ofNullable(executable.getAnnotation(CheckMethod.List.class)).map(o -> o.value()).orElse(new CheckMethod[0]));
+	}
+	
+	private <T extends Annotation> List<T> readAnnotations(Supplier<T> annotationGetter, Supplier<T[]> arrayAnnotationGetter)
+	{
+		List<T> result = new ArrayList<>();
+		result.addAll(Arrays.asList(arrayAnnotationGetter.get()));
+		T annotation = annotationGetter.get();
+		if (annotation != null)
 		{
-			result.addAll(Arrays.asList(wrapper.value()));
-		}
-		else
-		{
-			CheckMethod annotation2 = executable.getAnnotation(CheckMethod.class);
-			if (annotation2 != null)
-			{
-				result.add(annotation2);
-			}
+			result.add(annotation);
 		}
 		return result;
 	}
 	
 	private List<CheckMethod> readMethodAnnotations(Field field)
 	{
-		List<CheckMethod> result = new ArrayList<>();
-		CheckMethod.List wrapper = field.getAnnotation(CheckMethod.List.class);
-		if (wrapper != null)
-		{
-			result.addAll(Arrays.asList(wrapper.value()));
-		}
-		else
-		{
-			CheckMethod annotation2 = field.getAnnotation(CheckMethod.class);
-			if (annotation2 != null)
-			{
-				result.add(annotation2);
-			}
-		}
-		return result;
+		return readAnnotations(() -> field.getAnnotation(CheckMethod.class),
+				() -> Optional.ofNullable(field.getAnnotation(CheckMethod.List.class)).map(o -> o.value()).orElse(new CheckMethod[0]));
 	}
 	
 	private Collection<DynamicTest> getDynamicConstructorTests(List<CheckConstructor> list, String messagePrefix)
