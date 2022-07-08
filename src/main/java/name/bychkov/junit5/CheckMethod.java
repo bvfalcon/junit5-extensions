@@ -19,9 +19,9 @@ public @interface CheckMethod
 	
 	String value();
 	
-	Class<?>[] parameters() default {};
-	
 	Class<?> returnType();
+	
+	Class<?>[] parameters() default {};
 	
 	String message() default "";
 	
