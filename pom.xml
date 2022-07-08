@@ -7,13 +7,13 @@
 	<version>1.0-SNAPSHOT</version>
 
 	<name>JUnit 5 Extensions</name>
+	<description>Useful features for testing with JUnit 5</description>
 	<url>https://github.com/bvfalcon/junit5-extensions</url>
 
 	<scm>
 		<url>git@github.com:bvfalcon/junit5-extensions.git</url>
 		<connection>scm:git:git@github.com:bvfalcon/junit5-extensions.git</connection>
 		<developerConnection>scm:git:git@github.com:bvfalcon/junit5-extensions.git</developerConnection>
-		<tag>HEAD</tag>
 	</scm>
 
 	<issueManagement>
