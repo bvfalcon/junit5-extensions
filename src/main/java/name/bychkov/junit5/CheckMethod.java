@@ -21,6 +21,8 @@ public @interface CheckMethod
 	
 	Class<?>[] parameters() default {};
 	
+	Class<?> returnType();
+	
 	String message() default "";
 	
 	@Retention(RUNTIME)

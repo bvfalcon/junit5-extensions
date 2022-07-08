@@ -15,8 +15,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.commons.lang3.reflect.MethodUtils;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 import org.opentest4j.AssertionFailedError;
@@ -24,6 +22,11 @@ import org.opentest4j.TestAbortedException;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
+
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.NotFoundException;
+import javassist.bytecode.Descriptor;
 
 public class ReflectionTests
 {
@@ -255,7 +258,7 @@ public class ReflectionTests
 			if (targetMethod != null && !targetMethod.trim().isEmpty())
 			{
 				Class<?>[] targetMethodParameters = annotation.parameters();
-				result.add(getDynamicMethodTest(targetClass, targetMethod, annotation.message(), messagePrefix, targetMethodParameters));
+				result.add(getDynamicMethodTest(targetClass, targetMethod, annotation.message(), messagePrefix, annotation.returnType(), targetMethodParameters));
 			}
 			else
 			{
@@ -293,16 +296,23 @@ public class ReflectionTests
 	{
 		return DynamicTest.dynamicTest("testField", () ->
 		{
-			Field field = FieldUtils.getField(targetClass, targetField, true);
-			if (field == null)
+			try
 			{
-				if (userMessage != null && !userMessage.trim().isEmpty())
+				ClassPool pool = ClassPool.getDefault();
+				CtClass cc = pool.get(targetClass.getCanonicalName());
+				cc.getField(targetField);
+			}
+			catch (NotFoundException e)
+			{
 				{
-					throw new AssertionFailedError(userMessage);
-				}
-				else
-				{
-					throw new AssertionFailedError(String.format("%s Class %s has no accessible field %s", messagePrefix, targetClass.getCanonicalName(), targetField));
+					if (userMessage != null && !userMessage.trim().isEmpty())
+					{
+						throw new AssertionFailedError(userMessage);
+					}
+					else
+					{
+						throw new AssertionFailedError(String.format("%s Class %s has no accessible field %s", messagePrefix, targetClass.getCanonicalName(), targetField));
+					}
 				}
 			}
 		});
@@ -331,12 +341,28 @@ public class ReflectionTests
 		});
 	}
 	
-	private DynamicTest getDynamicMethodTest(Class<?> targetClass, String targetMethod, String userMessage, String messagePrefix, Class<?>... parameterClasses)
+	private DynamicTest getDynamicMethodTest(Class<?> targetClass, String targetMethod, String userMessage, String messagePrefix, Class<?> returnType, Class<?>... parameterClasses)
 	{
 		return DynamicTest.dynamicTest("testMethod", () ->
 		{
-			Method method = MethodUtils.getAccessibleMethod(targetClass, targetMethod, parameterClasses);
-			if (method == null)
+			try
+			{
+				ClassPool pool = ClassPool.getDefault();
+				CtClass cc = pool.get(targetClass.getCanonicalName());
+				CtClass returnClass = pool.get(returnType.getCanonicalName());
+				CtClass[] parameterCtClasses = Stream.of(parameterClasses).map(pc -> {
+					try
+					{
+						return pool.get(pc.getCanonicalName());
+					}
+					catch (NotFoundException e)
+					{
+						throw new RuntimeException(e.getMessage(), e);
+					}
+				}).toArray(CtClass[]::new);
+				cc.getMethod(targetMethod, Descriptor.ofMethod(returnClass, parameterCtClasses));
+			}
+			catch (NotFoundException e)
 			{
 				if (userMessage != null && !userMessage.trim().isEmpty())
 				{
@@ -344,8 +370,8 @@ public class ReflectionTests
 				}
 				else
 				{
-					throw new AssertionFailedError(String.format("%s Class %s has no accessible method %s(%s)", messagePrefix, targetClass.getCanonicalName(), targetMethod,
-							parameterClasses.length == 0 ? "" : Stream.of(parameterClasses).map(Class::getCanonicalName).collect(Collectors.joining(", "))));
+					throw new AssertionFailedError(String.format("%s Class %s has no accessible method %s %s(%s)", messagePrefix, targetClass.getCanonicalName(), returnType.getCanonicalName(),
+							targetMethod, parameterClasses.length == 0 ? "" : Stream.of(parameterClasses).map(Class::getCanonicalName).collect(Collectors.joining(", "))));
 				}
 			}
 		});
