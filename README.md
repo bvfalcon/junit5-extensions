@@ -1,7 +1,7 @@
 # junit5-extensions
 Useful features for testing with JUnit 5
 
-In current version JUnit5-Extensions supports automatically creation of JUnit5 test for controlling existence/accessability of constructors/fields/methods of Java-classes througth Reflection.
+In current version JUnit5-Extensions supports automatically creation of JUnit5 test for controlling existence/accessability of constructors/fields/methods of Java-classes through Reflection.
 
 ### Problem description
 
@@ -39,11 +39,10 @@ Next time when you will assembly your project with annotation creates JUnit5-tes
 You can use annotations @CheckField, @CheckMethod and @CheckConstuctor after these modifications in pom.xml:
 
 ```xml
-
 <dependencies>
-  ...
-  <!-- JUnit 5 dependencies -->
-  ...
+	...
+	<!-- JUnit 5 dependencies -->
+	...
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-extensions</artifactId>
@@ -61,7 +60,7 @@ You can use annotations @CheckField, @CheckMethod and @CheckConstuctor after the
 
 <build>
 	<plugins>
-    ...
+		...
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-surefire-plugin</artifactId>
@@ -85,6 +84,7 @@ Some notices to the code above:
 	<groupId>name.bychkov</groupId>
 	<artifactId>junit5-extensions</artifactId>
 	<version>1.0-SNAPSHOT</version>
+	<scope>provided</scope>
 </dependency>
 ```
 
