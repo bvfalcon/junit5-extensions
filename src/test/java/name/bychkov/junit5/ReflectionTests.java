@@ -2,6 +2,7 @@ package name.bychkov.junit5;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.nio.file.Files;
@@ -63,13 +64,10 @@ public class ReflectionTests
 	
 	private Collection<Object> readFile()
 	{
-		Path path = Paths.get("target/classes/" + CheckAnnotationProcessor.dataFileLocation);
-		ObjectInput in = null;
-		try
+		try (InputStream is = getClass().getClassLoader().getResourceAsStream(CheckAnnotationProcessor.dataFileLocation);
+				ByteArrayInputStream bais = new ByteArrayInputStream(is.readAllBytes());
+				ObjectInput in = new ObjectInputStream(bais))
 		{
-			byte[] bytes = Files.readAllBytes(path);
-			ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-			in = new ObjectInputStream(bais);
 			Set result = (Set) in.readObject();
 			return result;
 		}
@@ -77,19 +75,6 @@ public class ReflectionTests
 		{
 			e.printStackTrace();
 			return new HashSet<>();
-		}
-		finally
-		{
-			try
-			{
-				if (in != null)
-				{
-					in.close();
-				}
-			}
-			catch (IOException ex)
-			{
-			}
 		}
 	}
 	
