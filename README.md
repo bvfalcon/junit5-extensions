@@ -48,6 +48,7 @@ You can use annotations @CheckField, @CheckMethod and @CheckConstuctor after the
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-extensions</artifactId>
 		<version>1.0-SNAPSHOT</version>
+		<scope>provided</scope>
 	</dependency>
 	<dependency>
 		<groupId>name.bychkov</groupId>
