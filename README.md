@@ -46,13 +46,13 @@ You can use annotations @CheckField, @CheckMethod and @CheckConstuctor after the
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-extensions</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>0.1.1</version>
 		<scope>provided</scope>
 	</dependency>
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-extensions</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>0.1.1</version>
 		<type>test-jar</type>
 		<scope>test</scope>
 	</dependency>
@@ -83,7 +83,7 @@ Some notices to the code above:
 <dependency>
 	<groupId>name.bychkov</groupId>
 	<artifactId>junit5-extensions</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>0.1.1</version>
 	<scope>provided</scope>
 </dependency>
 ```
@@ -94,7 +94,7 @@ Some notices to the code above:
 <dependency>
 	<groupId>name.bychkov</groupId>
 	<artifactId>junit5-extensions</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>0.1.1</version>
 	<type>test-jar</type>
 	<scope>test</scope>
 </dependency>
