@@ -1,6 +1,8 @@
 # junit5-extensions
 Useful features for testing with JUnit 5
 
+## Safely work with reflections
+
 In current version JUnit5-Extensions supports automatically creation of JUnit5 test for controlling existence/accessability of constructors/fields/methods of Java-classes through Reflection.
 
 ### Problem description
