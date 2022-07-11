@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -186,12 +187,11 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		return object;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private String[] getParameterClassNames(Map<String, Object> annotationParameters)
 	{
-		return annotationParameters.get("parameters") != null
-				? (String[]) ((List) annotationParameters.get("parameters")).stream().map(Object::toString)
-						.map(o -> ((String) o).substring(0, ((String) o).lastIndexOf(".class"))).toArray(String[]::new)
-				: new String[0];
+		return Optional.ofNullable(annotationParameters.get("parameters")).map(o -> (List<AnnotationValue>) o).map(List::stream).orElseGet(Stream::empty)
+				.map(AnnotationValue::getValue).map(Object::toString).toArray(String[]::new);
 	}
 	
 	static class CheckFieldObject implements Serializable
