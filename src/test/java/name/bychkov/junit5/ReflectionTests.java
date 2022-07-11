@@ -119,15 +119,8 @@ public class ReflectionTests
 			}
 			catch (Throwable e)
 			{
-				if (e instanceof AssertionFailedError)
-				{
-					throw e;
-				}
-				else
-				{
-					throw createAssertionFailedError(fieldObject.message, e, "%s Class %s has no accessible field %s%s", messagePrefix, fieldObject.targetClass,
-							Optional.ofNullable(fieldObject.type).map(o -> o + " ").orElse(""), fieldObject.value);
-				}
+				throw createAssertionFailedError(fieldObject.message, e, "%s Class %s has no accessible field %s%s", messagePrefix, fieldObject.targetClass,
+						Optional.ofNullable(fieldObject.type).map(o -> o + " ").orElse(""), fieldObject.value);
 			}
 		});
 	}
@@ -156,21 +149,18 @@ public class ReflectionTests
 			}
 			catch (Throwable e)
 			{
-				if (e instanceof AssertionFailedError)
-				{
-					throw e;
-				}
-				else
-				{
-					throw createAssertionFailedError(constructorObject.message, e, "%s Class %s has no accessible constructor %s", messagePrefix, constructorObject.targetClass,
-							constructorObject.parameters.length == 0 ? "without parameters" : "with parameters " + Stream.of(constructorObject.parameters).collect(Collectors.joining(", ")));
-				}
+				throw createAssertionFailedError(constructorObject.message, e, "%s Class %s has no accessible constructor %s", messagePrefix, constructorObject.targetClass,
+						constructorObject.parameters.length == 0 ? "without parameters" : "with parameters " + Stream.of(constructorObject.parameters).collect(Collectors.joining(", ")));
 			}
 		});
 	}
 	
 	private AssertionFailedError createAssertionFailedError(String message, Throwable exception, String errorMessageFormat, Object... args)
 	{
+		if (exception != null && exception instanceof AssertionFailedError)
+		{
+			return (AssertionFailedError) exception;
+		}
 		if (message != null && !message.trim().isEmpty())
 		{
 			throw new AssertionFailedError(message);
@@ -239,16 +229,9 @@ public class ReflectionTests
 			}
 			catch (Throwable e)
 			{
-				if (e instanceof AssertionFailedError)
-				{
-					throw e;
-				}
-				else
-				{
-					throw createAssertionFailedError(methodObject.message, e, "%s Class %s has no accessible method %s %s(%s)", messagePrefix,
-							methodObject.targetClass, Optional.ofNullable(methodObject.returnType).map(o -> o + " ").orElse(""),
-							methodObject.value, methodObject.parameters.length == 0 ? "" : String.join(", ", methodObject.parameters));
-				}
+				throw createAssertionFailedError(methodObject.message, e, "%s Class %s has no accessible method %s %s(%s)", messagePrefix,
+						methodObject.targetClass, Optional.ofNullable(methodObject.returnType).map(o -> o + " ").orElse(""),
+						methodObject.value, methodObject.parameters.length == 0 ? "" : String.join(", ", methodObject.parameters));
 			}
 		});
 	}
