@@ -102,7 +102,6 @@ public class ReflectionTests
 					{
 						return false;
 					}
-					System.out.println(fieldObject.value + ", " + fieldObject.type + ", " + candidate.getType().getCanonicalName());
 					if (fieldObject.type != null && !fieldObject.type.trim().isEmpty()
 							&& !Objects.equals(fieldObject.type, candidate.getType().getCanonicalName()))
 					{

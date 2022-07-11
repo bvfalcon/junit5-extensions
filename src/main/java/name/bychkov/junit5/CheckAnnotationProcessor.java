@@ -35,8 +35,8 @@ import javax.tools.StandardLocation;
 		"name.bychkov.junit5.CheckField",
 		"name.bychkov.junit5.CheckField.List",
 		"name.bychkov.junit5.CheckMethod",
-		"name.bychkov.junit5.CheckMethod.List"})
-		@SupportedSourceVersion(SourceVersion.RELEASE_8)
+		"name.bychkov.junit5.CheckMethod.List" })
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class CheckAnnotationProcessor extends AbstractProcessor
 {
 	static final String dataFileLocation = "META-INF/maven/name.bychkov/junit5-extensions/data.dat";
@@ -78,7 +78,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		}
 		catch (IOException e)
 		{
-			//e.printStackTrace();
+			// e.printStackTrace();
 		}
 	}
 	
@@ -112,7 +112,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 			}
 		}
 	}
-
+	
 	private void processCheckAnnotation(AnnotationMirror annotation, Element element, Collection<Serializable> annotationItems)
 	{
 		Serializable object = null;
@@ -141,15 +141,18 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		String message;
 		
 		@Override
-		public int hashCode() {
+		public int hashCode()
+		{
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + Arrays.hashCode(parameters);
-			result = prime * result + Objects.hash(targetClass);
+			result = prime * result + Objects.hash(annotatedElement, message, targetClass);
 			return result;
 		}
+		
 		@Override
-		public boolean equals(Object obj) {
+		public boolean equals(Object obj)
+		{
 			if (this == obj)
 				return true;
 			if (obj == null)
@@ -157,7 +160,8 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 			if (getClass() != obj.getClass())
 				return false;
 			CheckConstructorObject other = (CheckConstructorObject) obj;
-			return Arrays.equals(parameters, other.parameters) && Objects.equals(targetClass, other.targetClass);
+			return Objects.equals(annotatedElement, other.annotatedElement) && Objects.equals(message, other.message)
+					&& Arrays.equals(parameters, other.parameters) && Objects.equals(targetClass, other.targetClass);
 		}
 	}
 	
@@ -201,11 +205,14 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		String message;
 		
 		@Override
-		public int hashCode() {
-			return Objects.hash(targetClass, value, type);
+		public int hashCode()
+		{
+			return Objects.hash(annotatedElement, message, targetClass, type, value);
 		}
+		
 		@Override
-		public boolean equals(Object obj) {
+		public boolean equals(Object obj)
+		{
 			if (this == obj)
 				return true;
 			if (obj == null)
@@ -213,7 +220,8 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 			if (getClass() != obj.getClass())
 				return false;
 			CheckFieldObject other = (CheckFieldObject) obj;
-			return Objects.equals(targetClass, other.targetClass) && Objects.equals(value, other.value) && Objects.equals(type, other.type);
+			return Objects.equals(annotatedElement, other.annotatedElement) && Objects.equals(message, other.message)
+					&& Objects.equals(targetClass, other.targetClass) && Objects.equals(type, other.type) && Objects.equals(value, other.value);
 		}
 	}
 	
@@ -247,15 +255,18 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		String message;
 		
 		@Override
-		public int hashCode() {
+		public int hashCode()
+		{
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + Arrays.hashCode(parameters);
-			result = prime * result + Objects.hash(returnType, targetClass, value);
+			result = prime * result + Objects.hash(annotatedElement, message, returnType, targetClass, value);
 			return result;
 		}
+		
 		@Override
-		public boolean equals(Object obj) {
+		public boolean equals(Object obj)
+		{
 			if (this == obj)
 				return true;
 			if (obj == null)
@@ -263,7 +274,8 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 			if (getClass() != obj.getClass())
 				return false;
 			CheckMethodObject other = (CheckMethodObject) obj;
-			return Arrays.equals(parameters, other.parameters) && Objects.equals(returnType, other.returnType)
+			return Objects.equals(annotatedElement, other.annotatedElement) && Objects.equals(message, other.message)
+					&& Arrays.equals(parameters, other.parameters) && Objects.equals(returnType, other.returnType)
 					&& Objects.equals(targetClass, other.targetClass) && Objects.equals(value, other.value);
 		}
 	}
@@ -283,15 +295,18 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 	
 	private String getAnnotatedElement(Element element, String[] parameterClassNames)
 	{
-		switch (element.getKind()) {
+		switch (element.getKind())
+		{
 			case METHOD:
 				return element.getEnclosingElement().toString() + "." + element.toString();
 			case FIELD:
+			case ENUM_CONSTANT:
 				return element.getEnclosingElement().toString() + "." + element.toString();
 			case CONSTRUCTOR:
 				return element.getEnclosingElement().toString() + "." + element.getEnclosingElement().getSimpleName() + "(" + String.join(", ", parameterClassNames) + ")";
 			case CLASS:
 			case INTERFACE:
+			case ENUM:
 				return element.toString();
 			default:
 				return element.toString();
