@@ -19,7 +19,9 @@ public @interface CheckMethod
 	
 	String value();
 	
-	Class<?> returnType();
+	Class<?> returnType() default NULL.class;
+	
+	static final class NULL {}
 	
 	Class<?>[] parameters() default {};
 	

@@ -19,6 +19,10 @@ public @interface CheckField
 	
 	String value();
 	
+	Class<?> type() default NULL.class;
+	
+	static final class NULL {}
+	
 	String message() default "";
 	
 	@Retention(SOURCE)

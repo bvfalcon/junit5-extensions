@@ -197,11 +197,12 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		String annotatedElement;
 		String targetClass;
 		String value;
+		String type;
 		String message;
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(targetClass, value);
+			return Objects.hash(targetClass, value, type);
 		}
 		@Override
 		public boolean equals(Object obj) {
@@ -212,7 +213,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 			if (getClass() != obj.getClass())
 				return false;
 			CheckFieldObject other = (CheckFieldObject) obj;
-			return Objects.equals(targetClass, other.targetClass) && Objects.equals(value, other.value);
+			return Objects.equals(targetClass, other.targetClass) && Objects.equals(value, other.value) && Objects.equals(type, other.type);
 		}
 	}
 	
@@ -230,6 +231,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		object.targetClass = getAnnotationAttribute(CheckField.class, annotationParameters, "targetClass");
 		object.annotatedElement = getAnnotatedElement(element, new String[0]);
 		object.value = getAnnotationAttribute(CheckField.class, annotationParameters, "value");
+		object.type = Optional.ofNullable(annotationParameters.get("type")).map(Object::toString).orElse(null);
 		return object;
 	}
 	
@@ -272,7 +274,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		CheckMethodObject object = new CheckMethodObject();
 		object.message = Optional.ofNullable(annotationParameters.get("message")).map(Object::toString).orElse(null);
 		object.targetClass = getAnnotationAttribute(CheckMethod.class, annotationParameters, "targetClass");
-		object.returnType = getAnnotationAttribute(CheckMethod.class, annotationParameters, "returnType");
+		object.returnType = Optional.ofNullable(annotationParameters.get("returnType")).map(Object::toString).orElse(null);
 		object.parameters = getParameterClassNames(annotationParameters);
 		object.annotatedElement = getAnnotatedElement(element, object.parameters);
 		object.value = getAnnotationAttribute(CheckMethod.class, annotationParameters, "value");
