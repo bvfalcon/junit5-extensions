@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,20 +39,30 @@ public class ReflectionTests
 			if (item instanceof CheckAnnotationProcessor.CheckConstructorObject)
 			{
 				CheckAnnotationProcessor.CheckConstructorObject constructorObject = (CheckAnnotationProcessor.CheckConstructorObject) item;
-				String messagePrefix = String.format("Annotation @%s on type %s warns:", CheckConstructor.class.getSimpleName(), constructorObject.annotatedElement);
-				test = getDynamicConstructorTest(constructorObject, messagePrefix);
+				final Function<Throwable, AssertionFailedError> exceptionProducer = e -> createAssertionFailedError(constructorObject.message, e,
+						"Annotation @%s on type %s warns: Class %s has no accessible constructor %s",
+						CheckConstructor.class.getSimpleName(), constructorObject.annotatedElement, constructorObject.targetClass,
+						constructorObject.parameters.length == 0 ? "without parameters" : "with parameters " + Stream.of(constructorObject.parameters).collect(Collectors.joining(", ")));
+				test = getDynamicConstructorTest(constructorObject, exceptionProducer);
 			}
 			else if (item instanceof CheckAnnotationProcessor.CheckFieldObject)
 			{
 				CheckAnnotationProcessor.CheckFieldObject fieldObject = (CheckAnnotationProcessor.CheckFieldObject) item;
-				String messagePrefix = String.format("Annotation @%s on field %s warns:", CheckField.class.getSimpleName(), fieldObject.annotatedElement);
-				test = getDynamicFieldTest(fieldObject, messagePrefix);
+				final Function<Throwable, AssertionFailedError> exceptionProducer = e -> createAssertionFailedError(fieldObject.message, e,
+						"Annotation @%s on field %s warns: Class %s has no accessible field %s%s",
+						CheckField.class.getSimpleName(), fieldObject.annotatedElement, fieldObject.targetClass,
+						Optional.ofNullable(fieldObject.type).map(o -> o + " ").orElse(""), fieldObject.value);
+				test = getDynamicFieldTest(fieldObject, exceptionProducer);
 			}
 			else if (item instanceof CheckAnnotationProcessor.CheckMethodObject)
 			{
 				CheckAnnotationProcessor.CheckMethodObject methodObject = (CheckAnnotationProcessor.CheckMethodObject) item;
-				String messagePrefix = String.format("Annotation @%s on method %s warns:", CheckMethod.class.getSimpleName(), methodObject.annotatedElement);
-				test = getDynamicMethodTest(methodObject, messagePrefix);
+				final Function<Throwable, AssertionFailedError> exceptionProducer = e -> createAssertionFailedError(methodObject.message, e,
+						"Annotation @%s on method %s warns: Class %s has no accessible method %s %s(%s)",
+						CheckMethod.class.getSimpleName(), methodObject.annotatedElement,
+						methodObject.targetClass, Optional.ofNullable(methodObject.returnType).map(o -> o + " ").orElse(""),
+						methodObject.value, methodObject.parameters.length == 0 ? "" : String.join(", ", methodObject.parameters));
+				test = getDynamicMethodTest(methodObject, exceptionProducer);
 			}
 			if (test != null)
 			{
@@ -88,7 +99,7 @@ public class ReflectionTests
 		}
 	}
 	
-	private DynamicTest getDynamicFieldTest(CheckAnnotationProcessor.CheckFieldObject fieldObject, String messagePrefix)
+	private DynamicTest getDynamicFieldTest(CheckAnnotationProcessor.CheckFieldObject fieldObject, Function<Throwable, AssertionFailedError> exceptionProducer)
 	{
 		return DynamicTest.dynamicTest("testField", () ->
 		{
@@ -111,19 +122,17 @@ public class ReflectionTests
 				List<Field> fields = ReflectionUtils.findFields(targetClass, predicate, HierarchyTraversalMode.TOP_DOWN);
 				if (fields.isEmpty())
 				{
-					throw createAssertionFailedError(fieldObject.message, null, "%s Class %s has no accessible field %s%s", messagePrefix, fieldObject.targetClass,
-							Optional.ofNullable(fieldObject.type).map(o -> o + " ").orElse(""), fieldObject.value);
+					throw exceptionProducer.apply(null);
 				}
 			}
 			catch (Throwable e)
 			{
-				throw createAssertionFailedError(fieldObject.message, e, "%s Class %s has no accessible field %s%s", messagePrefix, fieldObject.targetClass,
-						Optional.ofNullable(fieldObject.type).map(o -> o + " ").orElse(""), fieldObject.value);
+				throw exceptionProducer.apply(e);
 			}
 		});
 	}
 	
-	private DynamicTest getDynamicConstructorTest(CheckAnnotationProcessor.CheckConstructorObject constructorObject, String messagePrefix)
+	private DynamicTest getDynamicConstructorTest(CheckAnnotationProcessor.CheckConstructorObject constructorObject, Function<Throwable, AssertionFailedError> exceptionProducer)
 	{
 		return DynamicTest.dynamicTest("testConstructor", () ->
 		{
@@ -141,14 +150,12 @@ public class ReflectionTests
 				List<Constructor<?>> constructors = ReflectionUtils.findConstructors(targetClass, predicate);
 				if (constructors.isEmpty())
 				{
-					throw createAssertionFailedError(constructorObject.message, null, "%s Class %s has no accessible constructor %s", messagePrefix, constructorObject.targetClass,
-							constructorObject.parameters.length == 0 ? "without parameters" : "with parameters " + Stream.of(constructorObject.parameters).collect(Collectors.joining(", ")));
+					throw exceptionProducer.apply(null);
 				}
 			}
 			catch (Throwable e)
 			{
-				throw createAssertionFailedError(constructorObject.message, e, "%s Class %s has no accessible constructor %s", messagePrefix, constructorObject.targetClass,
-						constructorObject.parameters.length == 0 ? "without parameters" : "with parameters " + Stream.of(constructorObject.parameters).collect(Collectors.joining(", ")));
+				throw exceptionProducer.apply(e);
 			}
 		});
 	}
@@ -193,7 +200,7 @@ public class ReflectionTests
 		return true;
 	}
 	
-	private DynamicTest getDynamicMethodTest(CheckAnnotationProcessor.CheckMethodObject methodObject, String messagePrefix)
+	private DynamicTest getDynamicMethodTest(CheckAnnotationProcessor.CheckMethodObject methodObject, Function<Throwable, AssertionFailedError> exceptionProducer)
 	{
 		return DynamicTest.dynamicTest("testMethod", () ->
 		{
@@ -220,16 +227,12 @@ public class ReflectionTests
 				List<Method> methods = ReflectionUtils.findMethods(targetClass, predicate);
 				if (methods.isEmpty())
 				{
-					throw createAssertionFailedError(methodObject.message, null, "%s Class %s has no accessible method %s %s(%s)", messagePrefix,
-							methodObject.targetClass, Optional.ofNullable(methodObject.returnType).map(o -> o + " ").orElse(""),
-							methodObject.value, methodObject.parameters.length == 0 ? "" : String.join(", ", methodObject.parameters));
+					throw exceptionProducer.apply(null);
 				}
 			}
 			catch (Throwable e)
 			{
-				throw createAssertionFailedError(methodObject.message, e, "%s Class %s has no accessible method %s %s(%s)", messagePrefix,
-						methodObject.targetClass, Optional.ofNullable(methodObject.returnType).map(o -> o + " ").orElse(""),
-						methodObject.value, methodObject.parameters.length == 0 ? "" : String.join(", ", methodObject.parameters));
+				throw exceptionProducer.apply(e);
 			}
 		});
 	}
