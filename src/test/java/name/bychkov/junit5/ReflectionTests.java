@@ -2,7 +2,6 @@ package name.bychkov.junit5;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
@@ -82,9 +81,9 @@ public class ReflectionTests
 				return (Collection<Object>) in.readObject();
 			}
 		}
-		catch (ClassNotFoundException | IOException e)
+		catch (Throwable e)
 		{
-			e.printStackTrace();
+			// e.printStackTrace();
 			return new HashSet<>();
 		}
 	}

@@ -1,7 +1,6 @@
 package name.bychkov.junit5;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -76,7 +75,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 				writer.write(yourBytes);
 			}
 		}
-		catch (IOException e)
+		catch (Throwable e)
 		{
 			// e.printStackTrace();
 		}
