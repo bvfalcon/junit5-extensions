@@ -96,8 +96,9 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 					if ("value".equals(key))
 					{
 						@SuppressWarnings("unchecked")
-						List<AnnotationMirror> values = (List<AnnotationMirror>) containerAnnotationEntry.getValue().getValue();
-						values.stream().forEach(annotation -> processCheckAnnotation(annotation, element, annotationItems));
+						List<Object> values = (List<Object>) containerAnnotationEntry.getValue().getValue();
+						values.stream().filter(AnnotationMirror.class::isInstance).map(AnnotationMirror.class::cast)
+								.forEach(annotation -> processCheckAnnotation(annotation, element, annotationItems));
 					}
 				}
 			}
