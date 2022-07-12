@@ -17,13 +17,13 @@ void clearCachedSettings() throws Exception {
 }
 ```
 
-How can you be sure, that in next Version `MavenSettings` yet contains the Field with name `mavenSettings`?
+How can you be sure, that in next version `MavenSettings` yet contains the field with name `mavenSettings`?
 
 This code is very fragile. Smells bad, do you agree? Yes, of course, this is excellent example of anti-pattern. But in some situations you cannot avoid Java Reflections.
 
 ### Solution
 
-What can you do? Modify this sample code so:
+What can you do? Modify sample code so:
 
 ```java
 @CheckField(targetClass=MavenSettings.class, value="mavenSettings")
@@ -34,11 +34,11 @@ void clearCachedSettings() throws Exception {
 }
 ```
 
-Next time when you will assembly your project with annotation creates JUnit5-test that will control existence of field with name "mavenSettings" in class MavenSettings. If field not exists, JUnit5-test fails.
+Next time when you will assembly your project with annotation creates JUnit5-test that will control existence of field with name `mavenSettings` in class `MavenSettings`. If field not exists, JUnit5-test fails.
 
-### Using in project
+### Using in your project
 
-You can use annotations @CheckField, @CheckMethod and @CheckConstuctor after these modifications in pom.xml:
+You can use annotations `@CheckField`, `@CheckMethod` and `@CheckConstuctor` after these modifications in pom.xml:
 
 ```xml
 <dependencies>
@@ -79,7 +79,7 @@ You can use annotations @CheckField, @CheckMethod and @CheckConstuctor after the
 
 Some notices to the code above:
 
-1) Dependency with annotations:
+1) Dependency with annotations `@CheckConstructor`, `@CheckField` and `@CheckMethod`:
 
 ```xml
 <dependency>
