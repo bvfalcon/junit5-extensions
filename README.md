@@ -1,6 +1,12 @@
 # junit5-extensions
 Useful features for testing with JUnit 5
 
+#### Minimum requirements to use
+- Java 8
+- JUnit 5.3
+
+Accessible in [Maven Central Repository](https://search.maven.org/artifact/name.bychkov/junit5-extensions).
+
 ## Safely work with reflections
 
 In current version JUnit5-Extensions supports automatically creation of JUnit5 test for controlling existence/accessability of constructors/fields/methods of Java-classes through Reflection.
