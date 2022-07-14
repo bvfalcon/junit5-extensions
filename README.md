@@ -1,11 +1,11 @@
-# junit5-extensions
+# JUnit5-Extensions
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/name.bychkov/junit5-extensions/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/name.bychkov/junit5-extensions)
+
 Useful features for testing with JUnit 5
 
 #### Minimum requirements to use
 - Java 8
 - JUnit 5.3
-
-Accessible in [Maven Central Repository](https://search.maven.org/artifact/name.bychkov/junit5-extensions).
 
 ## Safely work with reflections
 
