@@ -9,6 +9,8 @@
 	<artifactId>junit5-tests</artifactId>
 
 	<name>JUnit5-Extensions Tests</name>
+	<description>JUnit5 tests of JUnit5-Extensions</description>
+	<url>https://github.com/bvfalcon/junit5-extensions</url>
 
 	<dependencies>
 		<dependency>

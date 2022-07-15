@@ -9,6 +9,8 @@
 	<artifactId>junit5-annotations</artifactId>
 
 	<name>JUnit5-Extensions Annotations</name>
+	<description>Annotations @CheckConstructor, @CheckField and @CheckMethod of JUnit5-Extensions</description>
+	<url>https://github.com/bvfalcon/junit5-extensions</url>
 
 	<build>
 		<plugins>
