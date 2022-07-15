@@ -55,13 +55,13 @@ You can use annotations `@CheckField`, `@CheckMethod` and `@CheckConstuctor` aft
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-annotations</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>0.1.2</version>
 		<scope>provided</scope>
 	</dependency>
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-tests</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>0.1.2</version>
 		<scope>test</scope>
 	</dependency>
 </dependencies>
@@ -91,7 +91,7 @@ Some notices to the code above:
 <dependency>
 	<groupId>name.bychkov</groupId>
 	<artifactId>junit5-annotations</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>0.1.2</version>
 	<scope>provided</scope>
 </dependency>
 ```
@@ -102,7 +102,7 @@ Some notices to the code above:
 <dependency>
 	<groupId>name.bychkov</groupId>
 	<artifactId>junit5-tests</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>0.1.2</version>
 	<scope>test</scope>
 </dependency>
 ```
@@ -124,4 +124,4 @@ Some notices to the code above:
 
 ### More samples
 
-You can find yet another example of usage JUnit5-Extensions [here: bvfalcon/junit5-extensions-example](https://github.com/bvfalcon/junit5-extensions-example).
+You can find yet another example of usage JUnit5-Extensions [here: bvfalcon/junit5-extensions-example](https://github.com/bvfalcon/junit5-extensions-example/tree/0.1.2).
