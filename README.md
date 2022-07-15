@@ -5,6 +5,7 @@ Useful features for testing with JUnit 5
 
 #### Minimum requirements to use
 - Java 8
+- Maven 3
 - JUnit 5.3
 
 ## Safely work with reflections
