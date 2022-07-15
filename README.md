@@ -54,15 +54,14 @@ You can use annotations `@CheckField`, `@CheckMethod` and `@CheckConstuctor` aft
 	...
 	<dependency>
 		<groupId>name.bychkov</groupId>
-		<artifactId>junit5-extensions</artifactId>
+		<artifactId>junit5-annotations</artifactId>
 		<version>1.0-SNAPSHOT</version>
 		<scope>provided</scope>
 	</dependency>
 	<dependency>
 		<groupId>name.bychkov</groupId>
-		<artifactId>junit5-extensions</artifactId>
+		<artifactId>junit5-tests</artifactId>
 		<version>1.0-SNAPSHOT</version>
-		<type>test-jar</type>
 		<scope>test</scope>
 	</dependency>
 </dependencies>
@@ -76,7 +75,7 @@ You can use annotations `@CheckField`, `@CheckMethod` and `@CheckConstuctor` aft
 			<version>3.0.0-M7</version>
 			<configuration>
 				<dependenciesToScan>
-					<dependency>name.bychkov:junit5-extensions:test-jar</dependency>
+					<dependency>name.bychkov:junit5-tests</dependency>
 				</dependenciesToScan>
 			</configuration>
 		</plugin>
@@ -91,7 +90,7 @@ Some notices to the code above:
 ```xml
 <dependency>
 	<groupId>name.bychkov</groupId>
-	<artifactId>junit5-extensions</artifactId>
+	<artifactId>junit5-annotations</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<scope>provided</scope>
 </dependency>
@@ -102,14 +101,13 @@ Some notices to the code above:
 ```xml
 <dependency>
 	<groupId>name.bychkov</groupId>
-	<artifactId>junit5-extensions</artifactId>
+	<artifactId>junit5-tests</artifactId>
 	<version>1.0-SNAPSHOT</version>
-	<type>test-jar</type>
 	<scope>test</scope>
 </dependency>
 ```
 
-3) Configuration of Maven-plugin, that helps Maven to find junit-tests in 3d-party jars. Important things - plugin version (must be >=3.0.0-M4) and the row "name.bychkov:junit5-extensions:test-jar"
+3) Configuration of Maven-plugin, that helps Maven to find junit-tests in 3d-party jars. Important things: plugin version (must be >= 3.0.0-M4) and the row "name.bychkov:junit5-tests"
 
 ```xml
 <plugin>
@@ -118,7 +116,7 @@ Some notices to the code above:
 	<version>3.0.0-M7</version>
 	<configuration>
 		<dependenciesToScan>
-			<dependency>name.bychkov:junit5-extensions:test-jar</dependency>
+			<dependency>name.bychkov:junit5-tests</dependency>
 		</dependenciesToScan>
 	</configuration>
 </plugin>
@@ -126,4 +124,4 @@ Some notices to the code above:
 
 ### More samples
 
-You can find yet another example of usage JUnit5-Extensions [here: bvfalcon/juni5-test](https://github.com/bvfalcon/junit5-test).
+You can find yet another example of usage JUnit5-Extensions [here: bvfalcon/junit5-extensions-example](https://github.com/bvfalcon/junit5-extensions-example).
