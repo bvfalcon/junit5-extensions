@@ -23,5 +23,10 @@
 			<artifactId>junit-jupiter-api</artifactId>
 			<version>5.8.2</version>
 		</dependency>
+		<dependency>
+			<groupId>com.github.davidmoten</groupId>
+			<artifactId>subethasmtp</artifactId>
+			<version>6.0.1</version>
+		</dependency>
 	</dependencies>
 </project>
