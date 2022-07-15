@@ -124,4 +124,4 @@ Some notices to the code above:
 
 ### More samples
 
-You can find yet another example of usage JUnit5-Extensions [here: bvfalcon/junit5-extensions-example](https://github.com/bvfalcon/junit5-extensions-example).
+You can find yet another example of usage JUnit5-Extensions [here: example](./example).
