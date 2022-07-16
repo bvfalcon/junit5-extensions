@@ -2,14 +2,12 @@ package name.bychkov.junit5;
 
 import java.util.Random;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import com.nilhcem.fakesmtp.FakeSMTP;
-import com.nilhcem.fakesmtp.model.EmailModel;
+import org.subethamail.wiser.WiserMessage;
 
 public class FakeSmtpDemoTest
 {
@@ -26,10 +24,10 @@ public class FakeSmtpDemoTest
 		try
 		{
 			testedObject.sendMessage(receiver, subject, body);
-			Assertions.assertEquals(1, FakeSMTP.getEmails().size());
-			EmailModel actualMail = FakeSMTP.getEmails().iterator().next();
+			Assertions.assertEquals(1, fakeSmtp.getMessages().size());
+			EMailMessage actualMail = fakeSmtp.getMessages().iterator().next();
 			Assertions.assertEquals(subject, actualMail.getSubject());
-			Assertions.assertEquals(receiver, actualMail.getTo());
+			Assertions.assertEquals(receiver, actualMail.getReceiver());
 		}
 		catch (MessagingException e)
 		{

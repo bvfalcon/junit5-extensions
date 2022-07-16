@@ -1,25 +1,20 @@
 package name.bychkov.junit5;
 
-import java.net.InetAddress;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-
-import com.nilhcem.fakesmtp.FakeSMTP;
+import org.subethamail.wiser.Wiser;
+import org.subethamail.wiser.WiserMessage;
 
 public class FakeSmtpJUnitExcension implements BeforeAllCallback, AfterAllCallback, AfterEachCallback
 {
-	private InetAddress host;
+	private static Wiser server;
 	private int port = 25;
 	
-	public FakeSmtpJUnitExcension host(InetAddress host)
-	{
-		this.host = host;
-		return this;
-	}
-
 	public FakeSmtpJUnitExcension port(int port)
 	{
 		this.port = port;
@@ -29,19 +24,24 @@ public class FakeSmtpJUnitExcension implements BeforeAllCallback, AfterAllCallba
 	@Override
 	public void afterEach(ExtensionContext context) throws Exception
 	{
-		FakeSMTP.deleteEmails();
+		server.getMessages().clear();
 	}
 
 	@Override
 	public void afterAll(ExtensionContext context) throws Exception
 	{
-		FakeSMTP.down();
+		server.stop();
 	}
 
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception
 	{
-		InetAddress hostLocal = host != null ? host : InetAddress.getByName("localhost");
-		FakeSMTP.up(port, hostLocal);
+		server = Wiser.port(port);
+		server.start();
+	}
+	
+	public List<EMailMessage> getMessages()
+	{
+		return server.getMessages().stream().map(EMailMessage::new).collect(Collectors.toList());
 	}
 }
