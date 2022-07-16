@@ -2,12 +2,11 @@ package name.bychkov.junit5;
 
 import java.util.Random;
 
-import jakarta.mail.MessagingException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.subethamail.wiser.WiserMessage;
+
+import jakarta.mail.MessagingException;
 
 public class FakeSmtpDemoTest
 {

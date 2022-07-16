@@ -24,9 +24,16 @@
 			<version>5.8.2</version>
 		</dependency>
 		<dependency>
-			<groupId>com.github.davidmoten</groupId>
+			<groupId>com.github.bvfalcon</groupId>
 			<artifactId>subethasmtp</artifactId>
-			<version>6.0.1</version>
+			<version>6.0.1-jul</version>
 		</dependency>
 	</dependencies>
+	
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
 </project>
