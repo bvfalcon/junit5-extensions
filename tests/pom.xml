@@ -23,17 +23,82 @@
 			<artifactId>junit-jupiter-api</artifactId>
 			<version>5.8.2</version>
 		</dependency>
-		<dependency>
-			<groupId>com.github.bvfalcon</groupId>
-			<artifactId>subethasmtp</artifactId>
-			<version>6.0.1-jul</version>
-		</dependency>
 	</dependencies>
-	
+
 	<repositories>
 		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
 		</repository>
 	</repositories>
+
+	<profiles>
+		<profile>
+			<id>jakarta.mail</id>
+			<dependencies>
+				<dependency>
+					<groupId>com.github.bvfalcon</groupId>
+					<artifactId>subethasmtp</artifactId>
+					<version>6.0.1-jul</version>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<version>3.4.1</version>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<finalName>${project.artifactId}-${project.version}-jakarta</finalName>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+						</configuration>
+						<executions>
+							<execution>
+								<id>make-assembly</id>
+								<phase>package</phase>
+								<goals>
+									<goal>single</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>java.mail</id>
+			<dependencies>
+				<dependency>
+					<groupId>com.github.bvfalcon</groupId>
+					<artifactId>subethasmtp</artifactId>
+					<version>5.2.8-jul</version>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<version>3.4.1</version>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+						</configuration>
+						<executions>
+							<execution>
+								<id>make-assembly</id>
+								<phase>package</phase>
+								<goals>
+									<goal>single</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import jakarta.mail.MessagingException;
+import javax.mail.MessagingException;
 
-public class FakeSmtpDemoTest
+public class FakeSmtpJavaMailDemoTest
 {
 	@RegisterExtension
-	static FakeSmtpJUnitExcension fakeSmtp = new FakeSmtpJUnitExcension().port(FakeSmtpDemo.smtpPort);
+	static FakeSmtpJUnitExcension fakeSmtp = new FakeSmtpJUnitExcension().port(FakeSmtpJavaMailDemo.smtpPort);
 
 	@Test
 	public void testSendMessage()
@@ -19,7 +19,7 @@ public class FakeSmtpDemoTest
 		String receiver = "test-email-"+ new Random().nextInt(Integer.MAX_VALUE)+"@example.com";
 		String subject = "test-subject-"+ new Random().nextInt(Integer.MAX_VALUE);
 		String body = "test-body-"+ new Random().nextInt(Integer.MAX_VALUE);
-		FakeSmtpDemo testedObject = new FakeSmtpDemo();
+		FakeSmtpJavaMailDemo testedObject = new FakeSmtpJavaMailDemo();
 		try
 		{
 			testedObject.sendMessage(receiver, subject, body);

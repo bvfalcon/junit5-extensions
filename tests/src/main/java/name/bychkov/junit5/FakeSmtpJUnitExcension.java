@@ -8,7 +8,6 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.subethamail.wiser.Wiser;
-import org.subethamail.wiser.WiserMessage;
 
 public class FakeSmtpJUnitExcension implements BeforeAllCallback, AfterAllCallback, AfterEachCallback
 {
@@ -37,6 +36,7 @@ public class FakeSmtpJUnitExcension implements BeforeAllCallback, AfterAllCallba
 	public void beforeAll(ExtensionContext context) throws Exception
 	{
 		server = Wiser.port(port);
+		System.out.println("Starting " + port);
 		server.start();
 	}
 	

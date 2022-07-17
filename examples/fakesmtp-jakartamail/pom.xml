@@ -4,10 +4,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>name.bychkov</groupId>
-	<artifactId>junit5-extensions-example</artifactId>
+	<artifactId>junit5-extensions-fakesmtp-jakartamail-example</artifactId>
 	<version>1.0-SNAPSHOT</version>
 
-	<name>JUni5-Extensions Example</name>
+	<name>JUni5-Extensions FakeSMTP with Jakarta Mail Example</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,30 +37,11 @@
 		</dependency>
 		<dependency>
 			<groupId>name.bychkov</groupId>
-			<artifactId>junit5-annotations</artifactId>
-			<version>${junit5-extensions.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>name.bychkov</groupId>
 			<artifactId>junit5-tests</artifactId>
 			<version>${junit5-extensions.version}</version>
 			<scope>test</scope>
+			<classifier>jakarta</classifier>
 		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M7</version>
-				<configuration>
-					<dependenciesToScan>
-						<dependency>name.bychkov:junit5-tests</dependency>
-					</dependenciesToScan>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
