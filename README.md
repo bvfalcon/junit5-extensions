@@ -153,7 +153,7 @@ These actions can be performed automatically. Use in code of your unit-test spec
 
 ```java
 	@RegisterExtension
-	static FakeSmtpJUnitExcension fakeSmtp = new FakeSmtpJUnitExcension();
+	static FakeSmtpJUnitExtension fakeSmtp = new FakeSmtpJUnitExtension();
 	
 	@Test
 	public void testSendMessage() {

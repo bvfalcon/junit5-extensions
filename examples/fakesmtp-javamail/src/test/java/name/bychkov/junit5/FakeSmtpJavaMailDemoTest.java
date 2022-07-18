@@ -11,7 +11,7 @@ import javax.mail.MessagingException;
 public class FakeSmtpJavaMailDemoTest
 {
 	@RegisterExtension
-	static FakeSmtpJUnitExcension fakeSmtp = new FakeSmtpJUnitExcension().port(FakeSmtpJavaMailDemo.smtpPort);
+	static FakeSmtpJUnitExtension fakeSmtp = new FakeSmtpJUnitExtension().port(FakeSmtpJavaMailDemo.smtpPort);
 
 	@Test
 	public void testSendMessage()

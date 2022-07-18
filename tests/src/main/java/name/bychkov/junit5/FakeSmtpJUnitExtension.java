@@ -9,12 +9,12 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.subethamail.wiser.Wiser;
 
-public class FakeSmtpJUnitExcension implements BeforeAllCallback, AfterAllCallback, AfterEachCallback
+public class FakeSmtpJUnitExtension implements BeforeAllCallback, AfterAllCallback, AfterEachCallback
 {
 	private static Wiser server;
 	private int port = 25;
 	
-	public FakeSmtpJUnitExcension port(int port)
+	public FakeSmtpJUnitExtension port(int port)
 	{
 		this.port = port;
 		return this;
