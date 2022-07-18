@@ -112,6 +112,11 @@ You can use annotations `@CheckField` `@CheckMethod` and `@CheckConstructor` to 
 
 You can find yet another example of usage annotations of JUnit5-Extensions [here: examples/annotations](./examples/annotations).
 
+### Safely work with resource bundles
+
+`@CheckKey` and `@CheckResourceBundles`
+
+
 ### Unit-testing with fake smtp-server
 
 #### Problem description
