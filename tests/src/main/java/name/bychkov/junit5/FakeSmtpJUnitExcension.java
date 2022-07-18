@@ -36,7 +36,6 @@ public class FakeSmtpJUnitExcension implements BeforeAllCallback, AfterAllCallba
 	public void beforeAll(ExtensionContext context) throws Exception
 	{
 		server = Wiser.port(port);
-		System.out.println("Starting " + port);
 		server.start();
 	}
 	
