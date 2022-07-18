@@ -17,11 +17,13 @@
 			<groupId>name.bychkov</groupId>
 			<artifactId>junit5-annotations</artifactId>
 			<version>${project.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
 			<version>5.8.2</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
