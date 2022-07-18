@@ -245,14 +245,14 @@ Some notices to the code above:
 </dependency>
 ```
 
-By default, implementation uses JavaMail realization (namespaces `javax.mail.`). If you uses Jakarta Mail (namespaces `jakarta.mail.`), add dependecy with classifier `jakarta`:
+By default, implementation uses JavaMail realization (namespaces `javax.mail.`). If you use Jakarta Mail (namespaces `jakarta.mail.`), add dependecy with classifier `jakarta`:
 
 ```xml
 <dependency>
 	<groupId>name.bychkov</groupId>
 	<artifactId>junit5-tests</artifactId>
 	<version>1.0-SNAPSHOT</version>
-	<classifier>test</classifier>
+	<classifier>jakarta</classifier>
 	<scope>test</scope>
 </dependency>
 ```
