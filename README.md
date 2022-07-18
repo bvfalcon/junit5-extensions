@@ -114,8 +114,11 @@ You can find yet another example of usage annotations of JUnit5-Extensions [here
 
 ### Safely work with resource bundles
 
-`@CheckKey` and `@CheckResourceBundles`
+`@CheckKey` and `@CheckResourceBundle`
 
+@CheckResourceBundle compares locale versions of resource bundle. All keys must be synchronous exists in all locale versions.
+
+@CheckKey checks existence of key in resource bundle with default locale.
 
 ### Unit-testing with fake smtp-server
 
