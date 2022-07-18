@@ -3,22 +3,19 @@
 
 Useful features for testing with JUnit 5
 
-- [JUnit5-Extensions](#junit5-extensions)
-      - [Minimum requirements](#minimum-requirements)
-  * [Using in your project](#using-in-your-project)
-  * [Features](#features)
-    + [Safely work with reflections](#safely-work-with-reflections)
-      - [Problem description](#problem-description)
-      - [Solution](#solution)
-      - [More samples](#more-samples)
-    + [Unit-testing with fake smtp-server](#unit-testing-with-fake-smtp-server)
-      - [Problem description](#problem-description-1)
-      - [Solution](#solution-1)
-      - [JavaMail and Jakarta Mail](#javamail-and-jakarta-mail)
-      - [More samples](#more-samples-1)
-
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
+### Table fo contents
+  * [Minimum requirements](#minimum-requirements)
+* [Using in your project](#using-in-your-project)
+* [Features](#features)
+  * [Safely work with reflections](#safely-work-with-reflections)
+    * [Problem description](#problem-description)
+    * [Solution](#solution)
+    * [More samples](#more-samples)
+  * [Unit-testing with fake smtp-server](#unit-testing-with-fake-smtp-server)
+    * [Problem description](#problem-description-1)
+    * [Solution](#solution-1)
+    * [JavaMail and Jakarta Mail](#javamail-and-jakarta-mail)
+    * [More samples](#more-samples-1)
 
 #### Minimum requirements
 - Java 8
@@ -113,7 +110,7 @@ You can use annotations `@CheckField` `@CheckMethod` and `@CheckConstructor` to 
 
 #### More samples
 
-You can find yet another example of usage JUnit5-Extensions [here: examples/annotations](./examples/annotations).
+You can find yet another example of usage annotations of JUnit5-Extensions [here: examples/annotations](./examples/annotations).
 
 ### Unit-testing with fake smtp-server
 
