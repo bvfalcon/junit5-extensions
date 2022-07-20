@@ -133,7 +133,7 @@ public class ResourceBundleTests extends AbstractTests
 				{
 					sb.append("\t").append(entry.getKey()).append(": [").append(String.join(", ", entry.getValue())).append("]").append(System.lineSeparator());
 				}
-				throw createAssertionFailedError(resourceBundleObject.message, null, "Annotation @%s on %s warns: ResourceBundles for baseName %s with has absent keys in locales:%s",
+				throw createAssertionFailedError(resourceBundleObject.message, null, "Annotation @%s on %s warns: ResourceBundles for baseName %s has absent keys in locales:%s",
 						CheckResourceBundle.class.getSimpleName(), resourceBundleObject.annotatedElement, resourceBundleObject.baseName, sb);
 			}
 		});

@@ -35,7 +35,11 @@ import javax.tools.StandardLocation;
 		"name.bychkov.junit5.CheckField",
 		"name.bychkov.junit5.CheckField.List",
 		"name.bychkov.junit5.CheckMethod",
-		"name.bychkov.junit5.CheckMethod.List" })
+		"name.bychkov.junit5.CheckMethod.List",
+		"name.bychkov.junit5.CheckKey",
+		"name.bychkov.junit5.CheckKey.List",
+		"name.bychkov.junit5.CheckResourceBundle",
+		"name.bychkov.junit5.CheckResourceBundle.List"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class CheckAnnotationProcessor extends AbstractProcessor
 {
@@ -143,7 +147,11 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		{
 			object = joinResourceBundle(annotation, element);
 		}
-		annotationItems.add(object);
+		
+		if (object != null)
+		{
+			annotationItems.add(object);
+		}
 	}
 	
 	static class CheckConstructorObject implements Serializable
