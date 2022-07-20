@@ -1,21 +1,14 @@
 package name.bychkov.junit5;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -23,29 +16,25 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.commons.util.ReflectionUtils.HierarchyTraversalMode;
 import org.junit.platform.commons.util.StringUtils;
 import org.opentest4j.AssertionFailedError;
 
-public class ReflectionTests
+public class ReflectionTests extends AbstractTests
 {
-	private static final Logger LOG = LoggerFactory.getLogger(ReflectionTests.class);
-	
 	private static final BiFunction<Throwable, CheckAnnotationProcessor.CheckConstructorObject, AssertionFailedError> constructorExceptionProducer = (e, constructorObject) ->
-			createAssertionFailedError(constructorObject.message, e, "Annotation @%s on type %s warns: Class %s has no accessible constructor %s",
+			createAssertionFailedError(constructorObject.message, e, "Annotation @%s on %s warns: Class %s has no accessible constructor %s ",
 			CheckConstructor.class.getSimpleName(), constructorObject.annotatedElement, constructorObject.targetClass,
 			constructorObject.parameters.length == 0 ? "without parameters" : "with parameters " + Stream.of(constructorObject.parameters).collect(Collectors.joining(", ")));
 	
 	private static final BiFunction<Throwable, CheckAnnotationProcessor.CheckFieldObject, AssertionFailedError> fieldExceptionProducer = (e, fieldObject) ->
-			createAssertionFailedError(fieldObject.message, e, "Annotation @%s on field %s warns: Class %s has no accessible field %s%s",
+			createAssertionFailedError(fieldObject.message, e, "Annotation @%s on %s warns: Class %s has no accessible field %s%s",
 			CheckField.class.getSimpleName(), fieldObject.annotatedElement, fieldObject.targetClass,
 			Optional.ofNullable(fieldObject.type).map(o -> o + " ").orElse(""), fieldObject.value);
 	
 	private static final BiFunction<Throwable, CheckAnnotationProcessor.CheckMethodObject, AssertionFailedError> methodExceptionProducer = (e, methodObject) ->
-			createAssertionFailedError(methodObject.message, e, "Annotation @%s on method %s warns: Class %s has no accessible method %s %s(%s)",
+			createAssertionFailedError(methodObject.message, e, "Annotation @%s on %s warns: Class %s has no accessible method %s %s(%s)",
 			CheckMethod.class.getSimpleName(), methodObject.annotatedElement,
 			methodObject.targetClass, Optional.ofNullable(methodObject.returnType).map(o -> o + " ").orElse(""),
 			methodObject.value, methodObject.parameters.length == 0 ? "" : String.join(", ", methodObject.parameters));
@@ -81,36 +70,6 @@ public class ReflectionTests
 		}
 		
 		return tests;
-	}
-	
-	@SuppressWarnings("unchecked")
-	private Set<Serializable> readFile()
-	{
-		try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(CheckAnnotationProcessor.dataFileLocation))
-		{
-			if (inputStream == null)
-			{
-				return Collections.emptySet();
-			}
-			final int bufLen = 4 * 0x400; // 4KB
-			byte[] buf = new byte[bufLen];
-			int readLen;
-			try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream())
-			{
-				while ((readLen = inputStream.read(buf, 0, bufLen)) != -1)
-				{
-					outputStream.write(buf, 0, readLen);
-				}
-				byte[] bytes = outputStream.toByteArray();
-				ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(bytes));
-				return (Set<Serializable>) in.readObject();
-			}
-		}
-		catch (Throwable e)
-		{
-			LOG.info(e, () -> String.format("Error has acquired while file reading: %s", e.getMessage()));
-			return Collections.emptySet();
-		}
 	}
 	
 	private DynamicTest getDynamicFieldTest(CheckAnnotationProcessor.CheckFieldObject fieldObject)
@@ -156,29 +115,6 @@ public class ReflectionTests
 				throw constructorExceptionProducer.apply(e, constructorObject);
 			}
 		});
-	}
-	
-	private static AssertionFailedError createAssertionFailedError(String message, Throwable exception, String errorMessageFormat, Object... args)
-	{
-		if (exception instanceof AssertionFailedError)
-		{
-			return (AssertionFailedError) exception;
-		}
-		if (StringUtils.isNotBlank(message))
-		{
-			throw new AssertionFailedError(message);
-		}
-		else
-		{
-			if (exception != null)
-			{
-				throw new AssertionFailedError(String.format(errorMessageFormat, args), exception);
-			}
-			else
-			{
-				throw new AssertionFailedError(String.format(errorMessageFormat, args));
-			}
-		}
 	}
 	
 	private boolean areParametersEquals(String[] annotationParametersClassNames, Class<?>[] candidateParameterTypes)
