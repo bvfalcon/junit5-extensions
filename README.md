@@ -110,7 +110,7 @@ You can use annotations `@CheckField` `@CheckMethod` and `@CheckConstructor` to 
 
 #### More samples
 
-You can find yet another example of usage annotations of JUnit5-Extensions [here: examples/annotations](./examples/annotations).
+You can find yet another example of usage this annotations of JUnit5-Extensions [here: examples/reflections](./examples/reflections).
 
 ### Safely work with resource bundles
 
