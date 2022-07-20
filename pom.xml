@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>name.bychkov</groupId>
 	<artifactId>junit5-extensions</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>0.2.0</version>
 	<packaging>pom</packaging>
 
 	<name>JUnit5-Extensions Parent</name>
