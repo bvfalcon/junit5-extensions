@@ -4,7 +4,7 @@
 Useful features for testing with JUnit 5
 
 ## Table fo contents
-    * [Minimum requirements](#minimum-requirements)
+  * [Minimum requirements](#minimum-requirements)
 * [Using in your project](#using-in-your-project)
 * [Features](#features)
   * [Safely work with reflections](#safely-work-with-reflections)
@@ -120,7 +120,7 @@ You can find yet another example of usage this annotations of JUnit5-Extensions 
 
 ### Problem description
 
-If your application supports some languages, you know about Resource Bundles. Localized strings are language-specific and stored in *.properties (since Java 9 in *.xml too) files and have a view
+If your application supports multiple languages, you know about Resource Bundles. Localized strings are language-specific and stored in \*.properties (since Java 9 in \*.xml too) files and have a view
 
 ```properties
 key1=value1
@@ -153,7 +153,7 @@ public String getLocalizedKey1() {
 }
 ```
 
-With annotations `@CheckKey` and `@CheckResourceBundle` you can be always sure, that key1 exists in default locale resource bundle (@CheckKey) and all keys in locales "en" and "de" resource bundle "Messages" are synchronized (@CheckResourceBundle)
+With annotations `@CheckKey` and `@CheckResourceBundle` you can be always sure, that 'key1' exists in default locale resource bundle (`@CheckKey`) and all keys in locales "en" and "de" resource bundle "Messages" are synchronized (`@CheckResourceBundle`).
 
 ### More samples
 
