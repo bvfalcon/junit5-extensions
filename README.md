@@ -36,7 +36,6 @@ Add in your pom.xml these modifications
 	<!-- other dependencies -->
 	<!-- JUnit 5 dependencies -->
 	...
-	<!-- Annotations @CheckConstructor, @CheckField and @CheckMethod -->
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-annotations</artifactId>
