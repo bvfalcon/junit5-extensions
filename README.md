@@ -153,7 +153,7 @@ public String getLocalizedKey1() {
 }
 ```
 
-With annotations `@CheckKey` and `@CheckResourceBundle` you can be always sure, that 'key1' exists in default locale resource bundle (`@CheckKey`) and all keys in locales "en" and "de" resource bundle "Messages" are synchronized (`@CheckResourceBundle`).
+With annotations `@CheckKey` and `@CheckResourceBundle` you can be always sure, that `key1` exists in default locale resource bundle (`@CheckKey`) and all keys in locales "en" and "de" resource bundle "Messages" are synchronized (`@CheckResourceBundle`).
 
 ### More samples
 
