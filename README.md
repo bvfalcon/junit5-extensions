@@ -130,7 +130,7 @@ key3=value3
 In java code these localized strings are used usually as
 
 ```java
-private ResourceBundle bundle = ResourceBundle.getBundle("Messages", Locale.forLanguageTag("en"));
+private ResourceBundle bundle = ResourceBundle.getBundle("Messages", Locale.ENGLISH);
 
 public String getLocalizedKey1() {
 	return bundle.getString(key1);
@@ -143,7 +143,7 @@ All will be good when you developing an application. But after several redesign 
 
 ```java
 @CheckResourceBundle(baseName="Messages", locales={"en","de"})
-private ResourceBundle bundle = ResourceBundle.getBundle("Messages", Locale.forLanguageTag("en"));
+private ResourceBundle bundle = ResourceBundle.getBundle("Messages", Locale.ENGLISH);
 
 @CheckKey(baseName="Messages", value="key1")
 public String getLocalizedKey1() {
