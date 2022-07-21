@@ -42,7 +42,6 @@ Add in your pom.xml these modifications
 		<version>1.0-SNAPSHOT</version>
 		<scope>provided</scope>
 	</dependency>
-	<!-- Reflection testing and FakeSMTP -->
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-tests</artifactId>
