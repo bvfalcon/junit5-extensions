@@ -1,5 +1,6 @@
 package name.bychkov.junit5;
 
+import java.io.IOException;
 import java.util.Random;
 
 import org.junit.jupiter.api.Assertions;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 public class FakeSmtpJakartaMailDemoTest
 {
@@ -24,11 +26,12 @@ public class FakeSmtpJakartaMailDemoTest
 		{
 			testedObject.sendMessage(receiver, subject, body);
 			Assertions.assertEquals(1, fakeSmtp.getMessages().size());
-			EMailMessage actualMail = fakeSmtp.getMessages().iterator().next();
+			MimeMessage actualMail = fakeSmtp.getMessages().iterator().next();
 			Assertions.assertEquals(subject, actualMail.getSubject());
-			Assertions.assertEquals(receiver, actualMail.getReceiver());
+			Assertions.assertEquals(receiver, actualMail.getAllRecipients()[0].toString());
+			Assertions.assertEquals(body, actualMail.getContent().toString().trim());
 		}
-		catch (MessagingException e)
+		catch (MessagingException | IOException e)
 		{
 			Assertions.fail(e);
 		}

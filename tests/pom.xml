@@ -47,6 +47,25 @@
 			<build>
 				<plugins>
 					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>${build-helper-maven-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>add-jakarta.mail-source</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>add-source</goal>
+								</goals>
+								<configuration>
+									<sources>
+										<source>src/jakarta.mail/java</source>
+									</sources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
 						<artifactId>maven-assembly-plugin</artifactId>
 						<version>${maven-assembly-plugin.version}</version>
 						<configuration>
@@ -62,6 +81,34 @@
 								<goals>
 									<goal>single</goal>
 								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-install-plugin</artifactId>
+						<version>${maven-install-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>default-install</id>
+								<configuration>
+									<skip>true</skip>
+								</configuration>
+							</execution>
+							<execution>
+								<id>install-jakarta-classifier</id>
+								<phase>install</phase>
+								<goals>
+									<goal>install-file</goal>
+								</goals>
+								<configuration>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.artifactId}</artifactId>
+									<version>${project.version}</version>
+									<packaging>jar</packaging>
+									<classifier>jakarta</classifier>
+									<file>${project.build.directory}/${project.build.finalName}.jar</file>
+									<pomFile>pom.xml</pomFile>
+								</configuration>
 							</execution>
 						</executions>
 					</plugin>
@@ -103,6 +150,25 @@
 			</dependencies>
 			<build>
 				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>${build-helper-maven-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>add-java.mail-source</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>add-source</goal>
+								</goals>
+								<configuration>
+									<sources>
+										<source>src/java.mail/java</source>
+									</sources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 					<plugin>
 						<artifactId>maven-assembly-plugin</artifactId>
 						<version>${maven-assembly-plugin.version}</version>
