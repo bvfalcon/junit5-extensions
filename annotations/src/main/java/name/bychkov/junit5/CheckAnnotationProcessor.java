@@ -103,7 +103,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 				for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> containerAnnotationEntry : containerAnnotation.getElementValues().entrySet())
 				{
 					String key = containerAnnotationEntry.getKey().getSimpleName().toString();
-					if ("value".equals(key))
+					if ("value".equals(key) && containerAnnotationEntry.getValue().getValue() instanceof List)
 					{
 						@SuppressWarnings("unchecked")
 						List<Object> values = (List<Object>) containerAnnotationEntry.getValue().getValue();
