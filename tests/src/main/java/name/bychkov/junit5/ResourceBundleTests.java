@@ -2,6 +2,7 @@ package name.bychkov.junit5;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.TestFactory;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.opentest4j.AssertionFailedError;
+import org.opentest4j.TestAbortedException;
 
 public class ResourceBundleTests extends AbstractTests
 {
@@ -80,20 +83,28 @@ public class ResourceBundleTests extends AbstractTests
 	{
 		return DynamicTest.dynamicTest("testResourceBundle", () ->
 		{
-			if (resourceBundleObject.locales.length <= 1)
+			Set<String> localeNames = new HashSet<>(Arrays.asList(resourceBundleObject.locales));
+			if (localeNames.size() <= 1)
 			{
-				LOG.warn(() -> "Annotation @" + CheckResourceBundle.class.getSimpleName() + " on " + resourceBundleObject.annotatedElement + " informs: Attribute 'locales' must have more than 1 locales for testing. With " + resourceBundleObject.locales.length + " locales testing is not possible");
-				return;
+				String message = String.format("Annotation @%s on %s informs: Attribute 'locales' must have more than 1 unique locales for testing. With %s locales testing is not possible",
+						CheckResourceBundle.class.getSimpleName(), resourceBundleObject.annotatedElement, localeNames.size());
+				LOG.warn(() -> message);
+				throw new TestAbortedException(message);
 			}
 			// get keys
 			Map<String, Set<String>> keys = new HashMap<>();
 			List<String> missingResourceBundles = new ArrayList<>();
-			for (String localeStr : resourceBundleObject.locales)
+			for (String localeStr : localeNames)
 			{
 				try
 				{
 					Locale locale = Locale.forLanguageTag(localeStr);
 					ResourceBundle resourceBundle = ResourceBundle.getBundle(resourceBundleObject.baseName, locale);
+					if (!Objects.equals(localeStr, resourceBundle.getLocale().toString()))
+					{
+						missingResourceBundles.add(localeStr);
+						continue;
+					}
 					keys.put(localeStr, new HashSet<>(Collections.list(resourceBundle.getKeys())));
 				}
 				catch (MissingResourceException e)
