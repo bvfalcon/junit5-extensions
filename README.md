@@ -165,8 +165,8 @@ These actions can be performed automatically. Use in code of your unit-test spec
 			testedService.sendMessage(expectedReceiver, expectedSubject, "text of body");
 			
 			Assertions.assertEquals(1, fakeSmtp.getMessages().size());
-			EMailMessage actualMail = fakeSmtp.getMessages().iterator().next();
-			Assertions.assertEquals(expectedReceiver, actualMail.getReceiver());
+			MimeMessage actualMail = fakeSmtp.getMessages().iterator().next();
+			Assertions.assertEquals(expectedReceiver, actualMail.getAllRecipients()[0].toString());
 			Assertions.assertEquals(expectedSubject, actualMail.getSubject());
 		} catch (MessagingException e) {
 			Assertions.fail(e);
