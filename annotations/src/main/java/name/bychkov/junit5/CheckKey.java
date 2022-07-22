@@ -19,6 +19,8 @@ public @interface CheckKey
 	
 	String value();
 	
+	String locale() default "";
+	
 	String message() default "";
 	
 	@Retention(SOURCE)

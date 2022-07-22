@@ -65,7 +65,8 @@ public class ResourceBundleTests extends AbstractTests
 		{
 			try
 			{
-				ResourceBundle bundle = ResourceBundle.getBundle(keyObject.baseName);
+				Locale locale = Locale.forLanguageTag(Objects.toString(keyObject.locale, ""));
+				ResourceBundle bundle = ResourceBundle.getBundle(keyObject.baseName, locale);
 				Object value = bundle.getObject(keyObject.value);
 				if (value == null)
 				{

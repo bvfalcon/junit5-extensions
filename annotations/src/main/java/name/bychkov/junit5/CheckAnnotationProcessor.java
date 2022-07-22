@@ -211,22 +211,21 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 	
 	static class CheckKeyObject implements Serializable
 	{
-		private static final long serialVersionUID = -6028241811775586003L;
-		
+		private static final long serialVersionUID = -4466248997083873233L;
+
 		String annotatedElement;
 		String baseName;
 		String value;
+		String locale;
 		String message;
 		
 		@Override
-		public int hashCode()
-		{
-			return Objects.hash(annotatedElement, baseName, message, value);
+		public int hashCode() {
+			return Objects.hash(annotatedElement, baseName, locale, message, value);
 		}
 		
 		@Override
-		public boolean equals(Object obj)
-		{
+		public boolean equals(Object obj) {
 			if (this == obj)
 				return true;
 			if (obj == null)
@@ -234,7 +233,9 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 			if (getClass() != obj.getClass())
 				return false;
 			CheckKeyObject other = (CheckKeyObject) obj;
-			return Objects.equals(annotatedElement, other.annotatedElement) && Objects.equals(baseName, other.baseName) && Objects.equals(message, other.message) && Objects.equals(value, other.value);
+			return Objects.equals(annotatedElement, other.annotatedElement) && Objects.equals(baseName, other.baseName)
+					&& Objects.equals(locale, other.locale) && Objects.equals(message, other.message)
+					&& Objects.equals(value, other.value);
 		}
 	}
 	
@@ -245,6 +246,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		object.message = Optional.ofNullable(annotationParameters.get("message")).map(Object::toString).orElse(null);
 		object.baseName = getAnnotationAttribute(CheckKey.class, annotationParameters, "baseName");
 		object.value = getAnnotationAttribute(CheckKey.class, annotationParameters, "value");
+		object.locale = Optional.ofNullable(annotationParameters.get("locale")).map(Object::toString).orElse(null);
 		object.annotatedElement = getAnnotatedElement(element, new String[0]);
 		return object;
 	}
