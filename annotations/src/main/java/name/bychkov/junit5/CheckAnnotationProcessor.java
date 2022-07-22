@@ -35,7 +35,11 @@ import javax.tools.StandardLocation;
 		"name.bychkov.junit5.CheckField",
 		"name.bychkov.junit5.CheckField.List",
 		"name.bychkov.junit5.CheckMethod",
-		"name.bychkov.junit5.CheckMethod.List" })
+		"name.bychkov.junit5.CheckMethod.List",
+		"name.bychkov.junit5.CheckKey",
+		"name.bychkov.junit5.CheckKey.List",
+		"name.bychkov.junit5.CheckResourceBundle",
+		"name.bychkov.junit5.CheckResourceBundle.List"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class CheckAnnotationProcessor extends AbstractProcessor
 {
@@ -54,6 +58,12 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		
 		// CheckField.List and CheckField
 		processCheckAnnotations(roundEnv, CheckField.List.class, CheckField.class, annotationItems);
+		
+		// CheckKey.List and CheckKey
+		processCheckAnnotations(roundEnv, CheckKey.List.class, CheckKey.class, annotationItems);
+		
+		// CheckResourceBundle.List and CheckResourceBundle
+		processCheckAnnotations(roundEnv, CheckResourceBundle.List.class, CheckResourceBundle.class, annotationItems);
 		
 		writeFile(annotationItems);
 		
@@ -129,7 +139,19 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		{
 			object = joinConstructor(annotation, element);
 		}
-		annotationItems.add(object);
+		else if (CheckKey.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
+		{
+			object = joinKey(annotation, element);
+		}
+		else if (CheckResourceBundle.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
+		{
+			object = joinResourceBundle(annotation, element);
+		}
+		
+		if (object != null)
+		{
+			annotationItems.add(object);
+		}
 	}
 	
 	static class CheckConstructorObject implements Serializable
@@ -182,15 +204,99 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		CheckConstructorObject object = new CheckConstructorObject();
 		object.message = Optional.ofNullable(annotationParameters.get("message")).map(Object::toString).orElse(null);
 		object.targetClass = getAnnotationAttribute(CheckConstructor.class, annotationParameters, "targetClass");
-		object.parameters = getParameterClassNames(annotationParameters);
+		object.parameters = getAnnotationArrayAttribute(annotationParameters, "parameters");
 		object.annotatedElement = getAnnotatedElement(element, object.parameters);
 		return object;
 	}
 	
-	@SuppressWarnings("unchecked")
-	private String[] getParameterClassNames(Map<String, Object> annotationParameters)
+	static class CheckKeyObject implements Serializable
 	{
-		return Optional.ofNullable(annotationParameters.get("parameters")).map(o -> (List<AnnotationValue>) o).map(List::stream).orElseGet(Stream::empty)
+		private static final long serialVersionUID = -6028241811775586003L;
+		
+		String annotatedElement;
+		String baseName;
+		String value;
+		String message;
+		
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(annotatedElement, baseName, message, value);
+		}
+		
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CheckKeyObject other = (CheckKeyObject) obj;
+			return Objects.equals(annotatedElement, other.annotatedElement) && Objects.equals(baseName, other.baseName) && Objects.equals(message, other.message) && Objects.equals(value, other.value);
+		}
+	}
+	
+	private CheckKeyObject joinKey(AnnotationMirror annotation, Element element)
+	{
+		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
+		CheckKeyObject object = new CheckKeyObject();
+		object.message = Optional.ofNullable(annotationParameters.get("message")).map(Object::toString).orElse(null);
+		object.baseName = getAnnotationAttribute(CheckKey.class, annotationParameters, "baseName");
+		object.value = getAnnotationAttribute(CheckKey.class, annotationParameters, "value");
+		object.annotatedElement = getAnnotatedElement(element, new String[0]);
+		return object;
+	}
+	
+	static class CheckResourceBundleObject implements Serializable
+	{
+		private static final long serialVersionUID = -6200874311724044569L;
+		
+		String annotatedElement;
+		String baseName;
+		String[] locales;
+		String message;
+		
+		@Override
+		public int hashCode()
+		{
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + Arrays.hashCode(locales);
+			result = prime * result + Objects.hash(annotatedElement, baseName, message);
+			return result;
+		}
+		
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CheckResourceBundleObject other = (CheckResourceBundleObject) obj;
+			return Objects.equals(annotatedElement, other.annotatedElement) && Objects.equals(baseName, other.baseName) && Arrays.equals(locales, other.locales) && Objects.equals(message, other.message);
+		}
+	}
+	
+	private CheckResourceBundleObject joinResourceBundle(AnnotationMirror annotation, Element element)
+	{
+		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
+		CheckResourceBundleObject object = new CheckResourceBundleObject();
+		object.message = Optional.ofNullable(annotationParameters.get("message")).map(Object::toString).orElse(null);
+		object.baseName = getAnnotationAttribute(CheckKey.class, annotationParameters, "baseName");
+		object.locales = getAnnotationArrayAttribute(annotationParameters, "locales");
+		object.annotatedElement = getAnnotatedElement(element, new String[0]);
+		return object;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private String[] getAnnotationArrayAttribute(Map<String, Object> annotationParameters, String attribute)
+	{
+		return Optional.ofNullable(annotationParameters.get(attribute)).map(o -> (List<AnnotationValue>) o).map(List::stream).orElseGet(Stream::empty)
 				.map(AnnotationValue::getValue).map(Object::toString).toArray(String[]::new);
 	}
 	
@@ -287,7 +393,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		object.message = Optional.ofNullable(annotationParameters.get("message")).map(Object::toString).orElse(null);
 		object.targetClass = getAnnotationAttribute(CheckMethod.class, annotationParameters, "targetClass");
 		object.returnType = Optional.ofNullable(annotationParameters.get("returnType")).map(Object::toString).orElse(null);
-		object.parameters = getParameterClassNames(annotationParameters);
+		object.parameters = getAnnotationArrayAttribute(annotationParameters, "parameters");
 		object.annotatedElement = getAnnotatedElement(element, object.parameters);
 		object.value = getAnnotationAttribute(CheckMethod.class, annotationParameters, "value");
 		return object;

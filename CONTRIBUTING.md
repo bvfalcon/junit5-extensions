@@ -7,7 +7,7 @@ mvn clean install -pl .,annotations && mvn clean install -pl tests -Pjava.mail &
 
 run examples
 ```
-mvn clean test -f examples/annotations/pom.xml && mvn clean test -f examples/fakesmtp-javamail/pom.xml && mvn clean test -f examples/fakesmtp-jakartamail/pom.xml
+mvn clean test -f examples/reflections/pom.xml && mvn clean test -f examples/fakesmtp-javamail/pom.xml && mvn clean test -f examples/fakesmtp-jakartamail/pom.xml && mvn clean test -f examples/resource-bundle/pom.xml
 ```
 
 publish

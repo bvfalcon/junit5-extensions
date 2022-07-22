@@ -3,7 +3,7 @@
 
 Useful features for testing with JUnit 5
 
-### Table fo contents
+## Table fo contents
   * [Minimum requirements](#minimum-requirements)
 * [Using in your project](#using-in-your-project)
 * [Features](#features)
@@ -11,18 +11,22 @@ Useful features for testing with JUnit 5
     * [Problem description](#problem-description)
     * [Solution](#solution)
     * [More samples](#more-samples)
-  * [Unit-testing with fake smtp-server](#unit-testing-with-fake-smtp-server)
+  * [Safely work with resource bundles](#safely-work-with-resource-bundles)
     * [Problem description](#problem-description-1)
     * [Solution](#solution-1)
-    * [JavaMail and Jakarta Mail](#javamail-and-jakarta-mail)
     * [More samples](#more-samples-1)
+  * [Unit-testing with fake smtp-server](#unit-testing-with-fake-smtp-server)
+    * [Problem description](#problem-description-2)
+    * [Solution](#solution-2)
+    * [JavaMail and Jakarta Mail](#javamail-and-jakarta-mail)
+    * [More samples](#more-samples-2)
 
-#### Minimum requirements
+### Minimum requirements
 - Java 8
 - Maven 3.2.5
 - JUnit 5.3
 
-## Using in your project
+# Using in your project
 
 Add in your pom.xml these modifications
 
@@ -32,14 +36,12 @@ Add in your pom.xml these modifications
 	<!-- other dependencies -->
 	<!-- JUnit 5 dependencies -->
 	...
-	<!-- Annotations @CheckConstructor, @CheckField and @CheckMethod -->
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-annotations</artifactId>
 		<version>1.0-SNAPSHOT</version>
 		<scope>provided</scope>
 	</dependency>
-	<!-- Reflection testing and FakeSMTP -->
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-tests</artifactId>
@@ -69,13 +71,13 @@ Notes:
 
 1) maven-surefire-plugin must have version >= 2.22.0
 
-## Features
+# Features
 
-### Safely work with reflections
+## Safely work with reflections
 
 In current version JUnit5-Extensions supports automatically creation of JUnit5 test for controlling existence/accessability of constructors/fields/methods of Java-classes through Reflection.
 
-#### Problem description
+### Problem description
 
 Suppose you have a code in your project
 
@@ -91,7 +93,7 @@ How can you be sure, that in next version `MavenSettings` yet contains the field
 
 This code is very fragile. Smells bad, do you agree? Yes, of course, this is excellent example of anti-pattern. But in some situations you cannot avoid Java Reflections.
 
-#### Solution
+### Solution
 
 What can you do? Modify sample code so:
 
@@ -108,13 +110,56 @@ Next time when you will assembly your project with annotation creates JUnit5-tes
 
 You can use annotations `@CheckField` `@CheckMethod` and `@CheckConstructor` to autocreate junit-tests.
 
-#### More samples
+### More samples
 
-You can find yet another example of usage annotations of JUnit5-Extensions [here: examples/annotations](./examples/annotations).
+You can find yet another example of usage this annotations of JUnit5-Extensions [here: examples/reflections](./examples/reflections).
 
-### Unit-testing with fake smtp-server
+## Safely work with resource bundles
 
-#### Problem description
+### Problem description
+
+If your application supports multiple languages, you know about Resource Bundles. Localized strings are language-specific and stored in \*.properties (since Java 9 in \*.xml too) files and have a view
+
+```properties
+key1=value1
+key2=value2
+key3=value3
+...
+```
+
+In java code these localized strings are used usually as
+
+```java
+private ResourceBundle bundle = ResourceBundle.getBundle("Messages", Locale.ENGLISH);
+
+public String getLocalizedKey1() {
+	return bundle.getString(key1);
+}
+```
+
+All will be good when you developing an application. But after several redesign nobody can already say, that localiyed strings are used and that are obsolete and can be removed.
+
+### Solution
+
+```java
+@CheckResourceBundle(baseName="Messages", locales={"en","de"})
+private ResourceBundle bundle = ResourceBundle.getBundle("Messages", Locale.ENGLISH);
+
+@CheckKey(baseName="Messages", value="key1")
+public String getLocalizedKey1() {
+	return bundle.getString("key1");
+}
+```
+
+With annotations `@CheckKey` and `@CheckResourceBundle` you can be always sure, that `key1` exists in default locale resource bundle (`@CheckKey`) and all keys in locales "en" and "de" resource bundle "Messages" are synchronized (`@CheckResourceBundle`).
+
+### More samples
+
+Full example you can find [here: examples/resource-bundle](./examples/resource-bundle).
+
+## Unit-testing with fake smtp-server
+
+### Problem description
 
 Suppose, your application sends emails to users with such or similar code:
 
@@ -147,7 +192,7 @@ public class SendEmailService {
 
 You must be sure this functionality will work orrect in future and not break, while the code changes. How can you do this? Every time you can start simple smpt-server locally. After tests runned, see messages and prove it. For small projects this is only uncomfortable, for large - impossible.
 
-#### Solution
+### Solution
 
 These actions can be performed automatically. Use in code of your unit-test special extension and smtp-server will start and stop automatically:
 
@@ -174,7 +219,7 @@ These actions can be performed automatically. Use in code of your unit-test spec
 	}
 ```
 
-#### JavaMail and Jakarta Mail
+### JavaMail and Jakarta Mail
 
 By default, implementation uses JavaMail realization (namespaces `javax.mail.`). If you use Jakarta Mail (namespaces `jakarta.mail.`), use dependency with classifier `jakarta`:
 
@@ -188,7 +233,7 @@ By default, implementation uses JavaMail realization (namespaces `javax.mail.`).
 </dependency>
 ```
 
-#### More samples
+### More samples
 
 You can see full examples of usage JUnit5-Extensions FakeSMTP with [JavaMail](./examples/fakesmtp-javamail/) and [Jakarta Mail](./examples/fakesmtp-jakartamail/).
 

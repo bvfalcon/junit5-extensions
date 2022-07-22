@@ -4,10 +4,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>name.bychkov</groupId>
-	<artifactId>junit5-extensions-annotations-example</artifactId>
+	<artifactId>junit5-extensions-resource-bundle-example</artifactId>
 	<version>1.0-SNAPSHOT</version>
 
-	<name>JUni5-Extensions Annotations Example</name>
+	<name>JUni5-Extensions Resource Bundle Example</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
