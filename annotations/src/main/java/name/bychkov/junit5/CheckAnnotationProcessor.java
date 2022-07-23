@@ -34,8 +34,12 @@ import javax.tools.StandardLocation;
 		"name.bychkov.junit5.CheckConstructor.List",
 		"name.bychkov.junit5.CheckField",
 		"name.bychkov.junit5.CheckField.List",
+		"name.bychkov.junit5.CheckFields",
+		"name.bychkov.junit5.CheckFields.List",
 		"name.bychkov.junit5.CheckMethod",
 		"name.bychkov.junit5.CheckMethod.List",
+		"name.bychkov.junit5.CheckMethods",
+		"name.bychkov.junit5.CheckMethods.List",
 		"name.bychkov.junit5.CheckKey",
 		"name.bychkov.junit5.CheckKey.List",
 		"name.bychkov.junit5.CheckResourceBundle",
@@ -56,8 +60,14 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		// CheckMethod.List and CheckMethod
 		processCheckAnnotations(roundEnv, CheckMethod.List.class, CheckMethod.class, annotationItems);
 		
+		// CheckMethods.List and CheckMethods
+		processCheckAnnotations(roundEnv, CheckMethods.List.class, CheckMethods.class, annotationItems);
+		
 		// CheckField.List and CheckField
 		processCheckAnnotations(roundEnv, CheckField.List.class, CheckField.class, annotationItems);
+		
+		// CheckFields.List and CheckFields
+		processCheckAnnotations(roundEnv, CheckFields.List.class, CheckFields.class, annotationItems);
 		
 		// CheckKey.List and CheckKey
 		processCheckAnnotations(roundEnv, CheckKey.List.class, CheckKey.class, annotationItems);
@@ -131,9 +141,17 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		{
 			object = joinField(annotation, element);
 		}
+		else if (CheckFields.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
+		{
+			object = joinFields(annotation, element);
+		}
 		else if (CheckMethod.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
 		{
 			object = joinMethod(annotation, element);
+		}
+		else if (CheckMethods.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
+		{
+			object = joinMethods(annotation, element);
 		}
 		else if (CheckConstructor.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
 		{
@@ -202,9 +220,9 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 	{
 		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
 		CheckConstructorObject object = new CheckConstructorObject();
-		object.message = Optional.ofNullable(annotationParameters.get("message")).map(Object::toString).orElse(null);
-		object.targetClass = getAnnotationAttribute(CheckConstructor.class, annotationParameters, "targetClass");
-		object.parameters = getAnnotationArrayAttribute(annotationParameters, "parameters");
+		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
+		object.targetClass = getAnnotationRequiredAttribute(CheckConstructor.class, annotationParameters, "targetClass");
+		object.parameters = getAnnotationOptionalArrayAttribute(annotationParameters, "parameters");
 		object.annotatedElement = getAnnotatedElement(element, object.parameters);
 		return object;
 	}
@@ -220,12 +238,14 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		String message;
 		
 		@Override
-		public int hashCode() {
+		public int hashCode()
+		{
 			return Objects.hash(annotatedElement, baseName, locale, message, value);
 		}
 		
 		@Override
-		public boolean equals(Object obj) {
+		public boolean equals(Object obj)
+		{
 			if (this == obj)
 				return true;
 			if (obj == null)
@@ -243,10 +263,10 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 	{
 		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
 		CheckKeyObject object = new CheckKeyObject();
-		object.message = Optional.ofNullable(annotationParameters.get("message")).map(Object::toString).orElse(null);
-		object.baseName = getAnnotationAttribute(CheckKey.class, annotationParameters, "baseName");
-		object.value = getAnnotationAttribute(CheckKey.class, annotationParameters, "value");
-		object.locale = Optional.ofNullable(annotationParameters.get("locale")).map(Object::toString).orElse(null);
+		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
+		object.baseName = getAnnotationRequiredAttribute(CheckKey.class, annotationParameters, "baseName");
+		object.value = getAnnotationRequiredAttribute(CheckKey.class, annotationParameters, "value");
+		object.locale = getAnnotationOptionalAttribute(annotationParameters, "locale");
 		object.annotatedElement = getAnnotatedElement(element, new String[0]);
 		return object;
 	}
@@ -288,17 +308,25 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 	{
 		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
 		CheckResourceBundleObject object = new CheckResourceBundleObject();
-		object.message = Optional.ofNullable(annotationParameters.get("message")).map(Object::toString).orElse(null);
-		object.baseName = getAnnotationAttribute(CheckKey.class, annotationParameters, "baseName");
-		object.locales = getAnnotationArrayAttribute(annotationParameters, "locales");
+		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
+		object.baseName = getAnnotationRequiredAttribute(CheckResourceBundle.class, annotationParameters, "baseName");
+		object.locales = getAnnotationRequiredArrayAttribute(CheckResourceBundle.class, annotationParameters, "locales");
 		object.annotatedElement = getAnnotatedElement(element, new String[0]);
 		return object;
 	}
 	
 	@SuppressWarnings("unchecked")
-	private String[] getAnnotationArrayAttribute(Map<String, Object> annotationParameters, String attribute)
+	private String[] getAnnotationOptionalArrayAttribute(Map<String, Object> annotationParameters, String attribute)
 	{
 		return Optional.ofNullable(annotationParameters.get(attribute)).map(o -> (List<AnnotationValue>) o).map(List::stream).orElseGet(Stream::empty)
+				.map(AnnotationValue::getValue).map(Object::toString).toArray(String[]::new);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private String[] getAnnotationRequiredArrayAttribute(Class<? extends Annotation> annotationClass, Map<String, Object> annotationParameters, String attribute)
+	{
+		return Optional.ofNullable(annotationParameters.get(attribute)).map(o -> (List<AnnotationValue>) o).map(List::stream)
+				.orElseThrow(() -> new RuntimeException(String.format("Annotation @%s must define the attribute %s", annotationClass.getSimpleName(), attribute)))
 				.map(AnnotationValue::getValue).map(Object::toString).toArray(String[]::new);
 	}
 	
@@ -333,21 +361,71 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		}
 	}
 	
-	private String getAnnotationAttribute(Class<? extends Annotation> annotationClass, Map<String, Object> annotationParameters, String attribute)
+	private String getAnnotationRequiredAttribute(Class<? extends Annotation> annotationClass, Map<String, Object> annotationParameters, String attribute)
 	{
 		return Optional.ofNullable(annotationParameters.get(attribute)).map(Object::toString)
 				.orElseThrow(() -> new RuntimeException(String.format("Annotation @%s must define the attribute %s", annotationClass.getSimpleName(), attribute)));
+	}
+	
+	private String getAnnotationOptionalAttribute(Map<String, Object> annotationParameters, String attribute)
+	{
+		return Optional.ofNullable(annotationParameters.get(attribute)).map(Object::toString).orElse(null);
 	}
 	
 	private CheckFieldObject joinField(AnnotationMirror annotation, Element element)
 	{
 		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
 		CheckFieldObject object = new CheckFieldObject();
-		object.message = Optional.ofNullable(annotationParameters.get("message")).map(Object::toString).orElse(null);
-		object.targetClass = getAnnotationAttribute(CheckField.class, annotationParameters, "targetClass");
+		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
+		object.targetClass = getAnnotationRequiredAttribute(CheckField.class, annotationParameters, "targetClass");
 		object.annotatedElement = getAnnotatedElement(element, new String[0]);
-		object.value = getAnnotationAttribute(CheckField.class, annotationParameters, "value");
-		object.type = Optional.ofNullable(annotationParameters.get("type")).map(Object::toString).orElse(null);
+		object.value = getAnnotationRequiredAttribute(CheckField.class, annotationParameters, "value");
+		object.type = getAnnotationOptionalAttribute(annotationParameters, "type");
+		return object;
+	}
+	
+	static class CheckFieldsObject implements Serializable
+	{
+		private static final long serialVersionUID = 1586354720019392961L;
+		
+		String annotatedElement;
+		String targetClass;
+		String[] values;
+		String message;
+		
+		@Override
+		public int hashCode()
+		{
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + Arrays.hashCode(values);
+			result = prime * result + Objects.hash(annotatedElement, message, targetClass);
+			return result;
+		}
+		
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CheckFieldsObject other = (CheckFieldsObject) obj;
+			return Objects.equals(annotatedElement, other.annotatedElement) && Objects.equals(message, other.message)
+					&& Objects.equals(targetClass, other.targetClass) && Arrays.equals(values, other.values);
+		}
+	}
+	
+	private CheckFieldsObject joinFields(AnnotationMirror annotation, Element element)
+	{
+		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
+		CheckFieldsObject object = new CheckFieldsObject();
+		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
+		object.targetClass = getAnnotationRequiredAttribute(CheckFields.class, annotationParameters, "targetClass");
+		object.annotatedElement = getAnnotatedElement(element, new String[0]);
+		object.values = getAnnotationRequiredArrayAttribute(CheckFields.class, annotationParameters, "values");
 		return object;
 	}
 	
@@ -392,12 +470,57 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 	{
 		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
 		CheckMethodObject object = new CheckMethodObject();
-		object.message = Optional.ofNullable(annotationParameters.get("message")).map(Object::toString).orElse(null);
-		object.targetClass = getAnnotationAttribute(CheckMethod.class, annotationParameters, "targetClass");
-		object.returnType = Optional.ofNullable(annotationParameters.get("returnType")).map(Object::toString).orElse(null);
-		object.parameters = getAnnotationArrayAttribute(annotationParameters, "parameters");
+		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
+		object.targetClass = getAnnotationRequiredAttribute(CheckMethod.class, annotationParameters, "targetClass");
+		object.returnType = getAnnotationOptionalAttribute(annotationParameters, "returnType");
+		object.parameters = getAnnotationOptionalArrayAttribute(annotationParameters, "parameters");
 		object.annotatedElement = getAnnotatedElement(element, object.parameters);
-		object.value = getAnnotationAttribute(CheckMethod.class, annotationParameters, "value");
+		object.value = getAnnotationRequiredAttribute(CheckMethod.class, annotationParameters, "value");
+		return object;
+	}
+	
+	static class CheckMethodsObject implements Serializable
+	{
+		private static final long serialVersionUID = 1277452904660779683L;
+		
+		String annotatedElement;
+		String targetClass;
+		String[] values;
+		String message;
+		
+		@Override
+		public int hashCode()
+		{
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + Arrays.hashCode(values);
+			result = prime * result + Objects.hash(annotatedElement, message, targetClass);
+			return result;
+		}
+		
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CheckMethodsObject other = (CheckMethodsObject) obj;
+			return Objects.equals(annotatedElement, other.annotatedElement) && Objects.equals(message, other.message)
+					&& Objects.equals(targetClass, other.targetClass) && Arrays.equals(values, other.values);
+		}
+	}
+	
+	private CheckMethodsObject joinMethods(AnnotationMirror annotation, Element element)
+	{
+		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
+		CheckMethodsObject object = new CheckMethodsObject();
+		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
+		object.targetClass = getAnnotationRequiredAttribute(CheckMethods.class, annotationParameters, "targetClass");
+		object.annotatedElement = getAnnotatedElement(element, new String[0]);
+		object.values = getAnnotationRequiredArrayAttribute(CheckMethods.class, annotationParameters, "values");
 		return object;
 	}
 	
