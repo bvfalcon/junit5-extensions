@@ -145,7 +145,7 @@ All will be good when you developing an application. But after several redesign 
 @CheckResourceBundle(baseName="Messages", locales={"en","de"})
 private ResourceBundle bundle = ResourceBundle.getBundle("Messages", Locale.ENGLISH);
 
-@CheckKey(baseName="Messages", value="key1")
+@CheckKey(baseName="Messages", value="key1", locale="en")
 public String getLocalizedKey1() {
 	return bundle.getString("key1");
 }
