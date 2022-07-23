@@ -7,6 +7,7 @@ import java.util.function.Function;
 @CheckMethod(targetClass = ChildSimpleDTO.class, value = "finalMethod4", returnType = void.class)
 public class App
 {
+	@CheckFields(targetClass = ParentSimpleDTO.class, values = { "variable3", "variable5" })
 	@CheckField(targetClass = ParentSimpleDTO.class, value = "CONSTANT_5")
 	@CheckConstructor(targetClass = ParentSimpleDTO.class)
 	@CheckConstructor(targetClass = ParentSimpleDTO.class, parameters = { String.class, double[].class })
