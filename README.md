@@ -108,7 +108,7 @@ void clearCachedSettings() throws Exception {
 
 Next time when you will assembly your project with annotation creates JUnit5-test that will control existence of field with name `mavenSettings` in class `MavenSettings`. If field not exists, JUnit5-test fails.
 
-You can use annotations `@CheckField`, `@CheckFields` ,`@CheckMethod` and `@CheckConstructor` to autocreate junit-tests.
+You can use annotations `@CheckField`, `@CheckFields`, `@CheckMethod` and `@CheckConstructor` to autocreate junit-tests.
 
 ### More samples
 
