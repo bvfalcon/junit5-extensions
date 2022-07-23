@@ -60,9 +60,6 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		// CheckMethod.List and CheckMethod
 		processCheckAnnotations(roundEnv, CheckMethod.List.class, CheckMethod.class, annotationItems);
 		
-		// CheckMethods.List and CheckMethods
-		processCheckAnnotations(roundEnv, CheckMethods.List.class, CheckMethods.class, annotationItems);
-		
 		// CheckField.List and CheckField
 		processCheckAnnotations(roundEnv, CheckField.List.class, CheckField.class, annotationItems);
 		
@@ -148,10 +145,6 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		else if (CheckMethod.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
 		{
 			object = joinMethod(annotation, element);
-		}
-		else if (CheckMethods.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
-		{
-			object = joinMethods(annotation, element);
 		}
 		else if (CheckConstructor.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
 		{
@@ -393,6 +386,8 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		String[] values;
 		String message;
 		
+		String[] failureValues;
+		
 		@Override
 		public int hashCode()
 		{
@@ -476,51 +471,6 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		object.parameters = getAnnotationOptionalArrayAttribute(annotationParameters, "parameters");
 		object.annotatedElement = getAnnotatedElement(element, object.parameters);
 		object.value = getAnnotationRequiredAttribute(CheckMethod.class, annotationParameters, "value");
-		return object;
-	}
-	
-	static class CheckMethodsObject implements Serializable
-	{
-		private static final long serialVersionUID = 1277452904660779683L;
-		
-		String annotatedElement;
-		String targetClass;
-		String[] values;
-		String message;
-		
-		@Override
-		public int hashCode()
-		{
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + Arrays.hashCode(values);
-			result = prime * result + Objects.hash(annotatedElement, message, targetClass);
-			return result;
-		}
-		
-		@Override
-		public boolean equals(Object obj)
-		{
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			CheckMethodsObject other = (CheckMethodsObject) obj;
-			return Objects.equals(annotatedElement, other.annotatedElement) && Objects.equals(message, other.message)
-					&& Objects.equals(targetClass, other.targetClass) && Arrays.equals(values, other.values);
-		}
-	}
-	
-	private CheckMethodsObject joinMethods(AnnotationMirror annotation, Element element)
-	{
-		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
-		CheckMethodsObject object = new CheckMethodsObject();
-		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
-		object.targetClass = getAnnotationRequiredAttribute(CheckMethods.class, annotationParameters, "targetClass");
-		object.annotatedElement = getAnnotatedElement(element, new String[0]);
-		object.values = getAnnotationRequiredArrayAttribute(CheckMethods.class, annotationParameters, "values");
 		return object;
 	}
 	

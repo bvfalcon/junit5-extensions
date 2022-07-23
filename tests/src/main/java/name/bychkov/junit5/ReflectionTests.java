@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +34,11 @@ public class ReflectionTests extends AbstractTests
 			CheckField.class.getSimpleName(), fieldObject.annotatedElement, fieldObject.targetClass,
 			Optional.ofNullable(fieldObject.type).map(o -> o + " ").orElse(""), fieldObject.value);
 	
+	private static final BiFunction<Throwable, CheckAnnotationProcessor.CheckFieldsObject, AssertionFailedError> fieldsExceptionProducer = (e, fieldsObject) ->
+			createAssertionFailedError(fieldsObject.message, e, "Annotation @%s on %s warns: Class %s has no accessible fields %s",
+			CheckFields.class.getSimpleName(), fieldsObject.annotatedElement, fieldsObject.targetClass,
+			Optional.ofNullable(fieldsObject.failureValues).map(o -> Arrays.asList(o)).map(List::stream).orElseGet(Stream::empty).collect(Collectors.joining(", ")));
+	
 	private static final BiFunction<Throwable, CheckAnnotationProcessor.CheckMethodObject, AssertionFailedError> methodExceptionProducer = (e, methodObject) ->
 			createAssertionFailedError(methodObject.message, e, "Annotation @%s on %s warns: Class %s has no accessible method %s %s(%s)",
 			CheckMethod.class.getSimpleName(), methodObject.annotatedElement,
@@ -57,6 +63,11 @@ public class ReflectionTests extends AbstractTests
 			{
 				CheckAnnotationProcessor.CheckFieldObject fieldObject = (CheckAnnotationProcessor.CheckFieldObject) item;
 				test = getDynamicFieldTest(fieldObject);
+			}
+			else if (item instanceof CheckAnnotationProcessor.CheckFieldsObject)
+			{
+				CheckAnnotationProcessor.CheckFieldsObject fieldsObject = (CheckAnnotationProcessor.CheckFieldsObject) item;
+				test = getDynamicFieldsTest(fieldsObject);
 			}
 			else if (item instanceof CheckAnnotationProcessor.CheckMethodObject)
 			{
@@ -92,6 +103,37 @@ public class ReflectionTests extends AbstractTests
 			catch (Throwable e)
 			{
 				throw fieldExceptionProducer.apply(e, fieldObject);
+			}
+		});
+	}
+	
+	private DynamicTest getDynamicFieldsTest(CheckAnnotationProcessor.CheckFieldsObject fieldsObject)
+	{
+		return DynamicTest.dynamicTest("testFields", () ->
+		{
+			try
+			{
+				Class<?> targetClass = Class.forName(fieldsObject.targetClass);
+				
+				List<String> failureFields = new ArrayList<>();
+				for (String field : fieldsObject.values)
+				{
+					Predicate<Field> predicate = candidate -> Objects.equals(field, candidate.getName());
+					List<Field> fields = ReflectionUtils.findFields(targetClass, predicate, HierarchyTraversalMode.TOP_DOWN);
+					if (fields.isEmpty())
+					{
+						failureFields.add(field);
+					}
+				}
+				if (!failureFields.isEmpty())
+				{
+					fieldsObject.failureValues = failureFields.toArray(new String[failureFields.size()]);
+					throw fieldsExceptionProducer.apply(null, fieldsObject);
+				}
+			}
+			catch (Throwable e)
+			{
+				throw fieldsExceptionProducer.apply(e, fieldsObject);
 			}
 		});
 	}
