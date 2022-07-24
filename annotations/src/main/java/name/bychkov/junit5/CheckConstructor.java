@@ -11,6 +11,11 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Check existence/availability of specified constructor in targetClass
+ * 
+ * @author Vladimir V. Bychkov
+ * */
 @Retention(SOURCE)
 @Target({ TYPE, CONSTRUCTOR, FIELD, METHOD })
 @Repeatable(CheckConstructor.List.class)
@@ -18,21 +23,18 @@ import java.lang.annotation.Target;
 public @interface CheckConstructor
 {
 	/**
-	 * Class with target constructor to check <br />
-	 * Required attribute 
+	 * Class with target constructor to check
 	 * */
 	Class<?> targetClass();
 
 	/**
 	 * Array of constructor parameter classes <br />
-	 * Optional attribute, default empty array <br />
-	 * Note: if parameters are not defined, existance of default constructor (without parameters) will be checked.
+	 * Note: if parameters are not specified, existence of default constructor (without parameters) will be checked.
 	 * */
 	Class<?>[] parameters() default {};
 	
 	/**
-	 * Custom message if constructor not exists/not accessible <br />
-	 * Optional attribute
+	 * Custom message if constructor not exists/not accessible
 	 * */
 	String message() default "";
 	
@@ -42,7 +44,7 @@ public @interface CheckConstructor
 	@interface List
 	{
 		/**
-		 * Array of @CheckConstructor annotations
+		 * Array of {@link CheckConstructor} annotations
 		 * */
 		CheckConstructor[] value();
 	}

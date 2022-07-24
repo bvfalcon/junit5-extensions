@@ -11,6 +11,11 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Check existence/availability of specified method in targetClass
+ * 
+ * @author Vladimir V. Bychkov
+ * */
 @Retention(SOURCE)
 @Target({ TYPE, CONSTRUCTOR, FIELD, METHOD })
 @Repeatable(CheckMethod.List.class)
@@ -18,36 +23,34 @@ import java.lang.annotation.Target;
 public @interface CheckMethod
 {
 	/**
-	 * Class with target method to check <br />
-	 * Required attribute 
+	 * Class with target method to check
 	 * */
 	Class<?> targetClass();
 	
 	/**
-	 * Method name <br />
-	 * Required attribute
+	 * Method name
 	 * */
 	String value();
 	
 	/**
 	 * Type of object method returns <br />
-	 * Optional attribute <br />
-	 * Checking only if defined
+	 * Checking only if specified
 	 * */
 	Class<?> returnType() default NULL.class;
 	
+	/**
+	 * null-value if attribute is not specified
+	 * */
 	static final class NULL {}
 	
 	/**
 	 * Array of method parameter classes <br />
-	 * Optional attribute <br />
-	 * Checking only if defined
+	 * Checking only if specified
 	 * */
 	Class<?>[] parameters() default NULL.class;
 	
 	/**
-	 * Custom message if method not exists/not accessible <br />
-	 * Optional attribute
+	 * Custom message if method not exists/not accessible
 	 * */
 	String message() default "";
 	
@@ -57,7 +60,7 @@ public @interface CheckMethod
 	@interface List
 	{
 		/**
-		 * Array of @CheckMethod annotations
+		 * Array of {@link CheckMethod} annotations
 		 * */
 		CheckMethod[] value();
 	}

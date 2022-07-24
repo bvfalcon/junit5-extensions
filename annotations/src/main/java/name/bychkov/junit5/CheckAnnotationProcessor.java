@@ -28,21 +28,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-@SupportedAnnotationTypes({
-		"name.bychkov.junit5.CheckConstructor",
-		"name.bychkov.junit5.CheckConstructor.List",
-		"name.bychkov.junit5.CheckField",
-		"name.bychkov.junit5.CheckField.List",
-		"name.bychkov.junit5.CheckFields",
-		"name.bychkov.junit5.CheckFields.List",
-		"name.bychkov.junit5.CheckMethod",
-		"name.bychkov.junit5.CheckMethod.List",
-		"name.bychkov.junit5.CheckMethods",
-		"name.bychkov.junit5.CheckMethods.List",
-		"name.bychkov.junit5.CheckKey",
-		"name.bychkov.junit5.CheckKey.List",
-		"name.bychkov.junit5.CheckResourceBundle",
-		"name.bychkov.junit5.CheckResourceBundle.List"})
+@SupportedAnnotationTypes({ "name.bychkov.junit5.*" })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class CheckAnnotationProcessor extends AbstractProcessor
 {
@@ -88,8 +74,8 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 				out = new ObjectOutputStream(bos);
 				out.writeObject(annotationItems);
 				out.flush();
-				byte[] yourBytes = bos.toByteArray();
-				writer.write(yourBytes);
+				byte[] bytes = bos.toByteArray();
+				writer.write(bytes);
 			}
 		}
 		catch (Throwable e)

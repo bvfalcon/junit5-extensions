@@ -11,6 +11,11 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Check keys synchronicity of specified resource bundle with specified locales array
+ * 
+ * @author Vladimir V. Bychkov
+ * */
 @Retention(SOURCE)
 @Target({ TYPE, CONSTRUCTOR, FIELD, METHOD })
 @Repeatable(CheckResourceBundle.List.class)
@@ -18,21 +23,20 @@ import java.lang.annotation.Target;
 public @interface CheckResourceBundle
 {
 	/**
-	 * base name of resource bundle <br />
-	 * Required attribute
+	 * base name of resource bundle
+	 * @see java.util.ResourceBundle
 	 * */
 	String baseName();
 	
 	/**
 	 * Array of locale names to check <br />
-	 * Required attribute <br />
-	 * Note: default locale is locale with empty ("") name. It can be defined in locales array too: {"", "en", ...}
+	 * Note: default locale is locale with empty ("") name. It can be specified in locales array too: {"", "en", ...}
+	 * @see java.util.Locale#forLanguageTag(String)
 	 * */
 	String[] locales();
 	
 	/**
-	 * Custom message if some keys in resource bundle are not synchronized <br />
-	 * Optional attribute
+	 * Custom message if some keys in resource bundle are not synchronized
 	 * */
 	String message() default "";
 	
@@ -42,7 +46,7 @@ public @interface CheckResourceBundle
 	@interface List
 	{
 		/**
-		 * Array of @CheckResourceBundle annotations
+		 * Array of {@link CheckResourceBundle} annotations
 		 * */
 		CheckResourceBundle[] value();
 	}

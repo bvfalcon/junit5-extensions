@@ -11,6 +11,11 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Check existence/availability of specified field in targetClass
+ * 
+ * @author Vladimir V. Bychkov
+ * */
 @Retention(SOURCE)
 @Target({ TYPE, CONSTRUCTOR, FIELD, METHOD })
 @Repeatable(CheckField.List.class)
@@ -18,28 +23,27 @@ import java.lang.annotation.Target;
 public @interface CheckField
 {
 	/**
-	 * Class with target field to check <br />
-	 * Required attribute 
+	 * Class with target field to check
 	 * */
 	Class<?> targetClass();
 	
 	/**
-	 * Field name <br />
-	 * Required attribute
+	 * Field name
 	 * */
 	String value();
 	
 	/**
-	 * Type of field <br />
-	 * Optional attribute
+	 * Type of field
 	 * */
 	Class<?> type() default NULL.class;
 	
+	/**
+	 * null-value if attribute is not specified
+	 * */
 	static final class NULL {}
 	
 	/**
-	 * Custom message if field not exists/not accessible <br />
-	 * Optional attribute
+	 * Custom message if field not exists/not accessible
 	 * */
 	String message() default "";
 	
@@ -49,7 +53,7 @@ public @interface CheckField
 	@interface List
 	{
 		/**
-		 * Array of @CheckField annotations
+		 * Array of {@link CheckField} annotations
 		 * */
 		CheckField[] value();
 	}
