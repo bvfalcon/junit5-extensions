@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -215,7 +214,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		CheckConstructorObject object = new CheckConstructorObject();
 		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
 		object.targetClass = getAnnotationRequiredAttribute(CheckConstructor.class, annotationParameters, "targetClass");
-		object.parameters = getAnnotationOptionalArrayAttribute(annotationParameters, "parameters");
+		object.parameters = getAnnotationOptionalArrayAttribute(annotationParameters, "parameters", new String[0]);
 		object.annotatedElement = getAnnotatedElement(element, object.parameters);
 		return object;
 	}
@@ -309,10 +308,14 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 	}
 	
 	@SuppressWarnings("unchecked")
-	private String[] getAnnotationOptionalArrayAttribute(Map<String, Object> annotationParameters, String attribute)
+	private String[] getAnnotationOptionalArrayAttribute(Map<String, Object> annotationParameters, String attribute, String[] defaultValue)
 	{
-		return Optional.ofNullable(annotationParameters.get(attribute)).map(o -> (List<AnnotationValue>) o).map(List::stream).orElseGet(Stream::empty)
-				.map(AnnotationValue::getValue).map(Object::toString).toArray(String[]::new);
+		List<AnnotationValue> list = (List<AnnotationValue>) annotationParameters.get(attribute);
+		if (list == null)
+		{
+			return defaultValue;
+		}
+		return list.stream().map(AnnotationValue::getValue).map(Object::toString).toArray(String[]::new);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -468,7 +471,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
 		object.targetClass = getAnnotationRequiredAttribute(CheckMethod.class, annotationParameters, "targetClass");
 		object.returnType = getAnnotationOptionalAttribute(annotationParameters, "returnType");
-		object.parameters = getAnnotationOptionalArrayAttribute(annotationParameters, "parameters");
+		object.parameters = getAnnotationOptionalArrayAttribute(annotationParameters, "parameters", null);
 		object.annotatedElement = getAnnotatedElement(element, object.parameters);
 		object.value = getAnnotationRequiredAttribute(CheckMethod.class, annotationParameters, "value");
 		return object;
@@ -484,7 +487,9 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 			case ENUM_CONSTANT:
 				return element.getEnclosingElement().toString() + "." + element.toString();
 			case CONSTRUCTOR:
-				return element.getEnclosingElement().toString() + "." + element.getEnclosingElement().getSimpleName() + "(" + String.join(", ", parameterClassNames) + ")";
+				return element.getEnclosingElement().toString() + "." + 
+					element.getEnclosingElement().getSimpleName() +
+					(parameterClassNames != null ? ("(" + String.join(", ", parameterClassNames) + ")") : "");
 			case CLASS:
 			case INTERFACE:
 			case ENUM:

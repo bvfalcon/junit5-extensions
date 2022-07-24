@@ -40,10 +40,10 @@ public class ReflectionTests extends AbstractTests
 			Optional.ofNullable(fieldsObject.failureValues).map(o -> Arrays.asList(o)).map(List::stream).orElseGet(Stream::empty).collect(Collectors.joining(", ")));
 	
 	private static final BiFunction<Throwable, CheckAnnotationProcessor.CheckMethodObject, AssertionFailedError> methodExceptionProducer = (e, methodObject) ->
-			createAssertionFailedError(methodObject.message, e, "Annotation @%s on %s warns: Class %s has no accessible method %s %s(%s)",
+			createAssertionFailedError(methodObject.message, e, "Annotation @%s on %s warns: Class %s has no accessible method %s%s%s",
 			CheckMethod.class.getSimpleName(), methodObject.annotatedElement,
 			methodObject.targetClass, Optional.ofNullable(methodObject.returnType).map(o -> o + " ").orElse(""),
-			methodObject.value, methodObject.parameters.length == 0 ? "" : String.join(", ", methodObject.parameters));
+			methodObject.value, methodObject.parameters == null ? "" : "(" + String.join(", ", methodObject.parameters) + ")");
 	
 	@TestFactory
 	public Collection<DynamicTest> testClassMembers()
@@ -92,7 +92,7 @@ public class ReflectionTests extends AbstractTests
 				Class<?> targetClass = Class.forName(fieldObject.targetClass);
 				
 				Predicate<Field> predicate = candidate -> Objects.equals(fieldObject.value, candidate.getName());
-				predicate.and(candidate -> StringUtils.isBlank(fieldObject.type) || Objects.equals(fieldObject.type, candidate.getType().getCanonicalName()));
+				predicate = predicate.and(candidate -> StringUtils.isBlank(fieldObject.type) || Objects.equals(fieldObject.type, candidate.getType().getCanonicalName()));
 				
 				List<Field> fields = ReflectionUtils.findFields(targetClass, predicate, HierarchyTraversalMode.TOP_DOWN);
 				if (fields.isEmpty())
@@ -185,8 +185,8 @@ public class ReflectionTests extends AbstractTests
 				Class<?> targetClass = Class.forName(methodObject.targetClass);
 				
 				Predicate<Method> predicate = candidate -> Objects.equals(methodObject.value, candidate.getName());
-				predicate.and(candidate -> StringUtils.isBlank(methodObject.returnType) || Objects.equals(methodObject.returnType, candidate.getReturnType().getCanonicalName()));
-				predicate.and(candidate -> areParametersEquals(methodObject.parameters, candidate.getParameterTypes()));
+				predicate = predicate.and(candidate -> StringUtils.isBlank(methodObject.returnType) || Objects.equals(methodObject.returnType, candidate.getReturnType().getCanonicalName()));
+				predicate = predicate.and(candidate -> methodObject.parameters == null || areParametersEquals(methodObject.parameters, candidate.getParameterTypes()));
 				
 				List<Method> methods = ReflectionUtils.findMethods(targetClass, predicate);
 				if (methods.isEmpty())
