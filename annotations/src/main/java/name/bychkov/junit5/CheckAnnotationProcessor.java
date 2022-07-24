@@ -375,8 +375,6 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		String[] values;
 		String message;
 		
-		String[] failureValues;
-		
 		@Override
 		public int hashCode()
 		{

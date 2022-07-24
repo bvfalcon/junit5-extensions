@@ -34,7 +34,7 @@ public class ReflectionTests extends AbstractTests
 			CheckField.class.getSimpleName(), fieldObject.annotatedElement, fieldObject.targetClass,
 			Optional.ofNullable(fieldObject.type).map(o -> o + " ").orElse(""), fieldObject.value);
 	
-	private static final BiFunction<Throwable, CheckAnnotationProcessor.CheckFieldsObject, AssertionFailedError> fieldsExceptionProducer = (e, fieldsObject) ->
+	private static final BiFunction<Throwable, CheckFieldsObject, AssertionFailedError> fieldsExceptionProducer = (e, fieldsObject) ->
 			createAssertionFailedError(fieldsObject.message, e, "Annotation @%s on %s warns: Class %s has no accessible fields %s",
 			CheckFields.class.getSimpleName(), fieldsObject.annotatedElement, fieldsObject.targetClass,
 			Optional.ofNullable(fieldsObject.failureValues).map(o -> Arrays.asList(o)).map(List::stream).orElseGet(Stream::empty).collect(Collectors.joining(", ")));
@@ -107,6 +107,22 @@ public class ReflectionTests extends AbstractTests
 		});
 	}
 	
+	static class CheckFieldsObject extends CheckAnnotationProcessor.CheckFieldsObject
+	{
+		private static final long serialVersionUID = -3913115685302546984L;
+		
+		String[] failureValues;
+		
+		public CheckFieldsObject(CheckAnnotationProcessor.CheckFieldsObject parentObject, String[] failureValues)
+		{
+			this.annotatedElement = parentObject.annotatedElement;
+			this.message = parentObject.message;
+			this.targetClass = parentObject.targetClass;
+			this.values = parentObject.values;
+			this.failureValues = failureValues;
+		}
+	}
+	
 	private DynamicTest getDynamicFieldsTest(CheckAnnotationProcessor.CheckFieldsObject fieldsObject)
 	{
 		return DynamicTest.dynamicTest("testFields", () ->
@@ -127,13 +143,13 @@ public class ReflectionTests extends AbstractTests
 				}
 				if (!failureFields.isEmpty())
 				{
-					fieldsObject.failureValues = failureFields.toArray(new String[failureFields.size()]);
-					throw fieldsExceptionProducer.apply(null, fieldsObject);
+					CheckFieldsObject newFieldsObject = new CheckFieldsObject(fieldsObject, failureFields.toArray(new String[failureFields.size()]));
+					throw fieldsExceptionProducer.apply(null, newFieldsObject);
 				}
 			}
 			catch (Throwable e)
 			{
-				throw fieldsExceptionProducer.apply(e, fieldsObject);
+				throw fieldsExceptionProducer.apply(e, new CheckFieldsObject(fieldsObject, new String[0]));
 			}
 		});
 	}
