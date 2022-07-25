@@ -14,8 +14,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Vector;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -28,15 +30,35 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
+import com.sun.source.util.Trees;
+import com.sun.tools.javac.tree.JCTree;
+
 @SupportedAnnotationTypes({ "name.bychkov.junit5.*" })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class CheckAnnotationProcessor extends AbstractProcessor
 {
 	static final String dataFileLocation = "META-INF/maven/name.bychkov/junit5-extensions/data.dat";
 	
+	private Trees trees;
+	private Vector<JCTree.JCVariableDecl> localVariableDeclatations = new Vector<>();
+	
+	@Override
+	public void init(final ProcessingEnvironment processingEnvironment)
+	{
+		super.init(processingEnvironment);
+		this.trees = Trees.instance(processingEnvironment);
+	}
+	
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
 	{
+		if (!roundEnv.processingOver())
+		{
+			processRootElements(roundEnv.getRootElements());
+		}
+		
+		System.out.println("localVariableDeclatations length: " + localVariableDeclatations.size());
+		
 		Set<Serializable> annotationItems = new HashSet<>();
 		
 		// CheckConstructor.List and CheckConstructor
@@ -63,6 +85,17 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		writeFile(annotationItems);
 		
 		return true;
+	}
+	
+	private void processRootElements(final Set<? extends Element> rootElements)
+	{
+		rootElements.forEach(this::processRootElement);
+	}
+	
+	private void processRootElement(final Element element)
+	{
+		JCTree tree = (JCTree) trees.getTree(element);
+		tree.accept(new AnnotatedLocalVariablesTranslator(localVariableDeclatations));
 	}
 	
 	private void writeFile(Set<Serializable> annotationItems)
@@ -215,7 +248,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 	static class CheckKeyObject implements Serializable
 	{
 		private static final long serialVersionUID = -4466248997083873233L;
-
+		
 		String annotatedElement;
 		String baseName;
 		String value;
@@ -526,9 +559,9 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 			case ENUM_CONSTANT:
 				return element.getEnclosingElement().toString() + "." + element.toString();
 			case CONSTRUCTOR:
-				return element.getEnclosingElement().toString() + "." + 
-					element.getEnclosingElement().getSimpleName() +
-					(parameterClassNames != null ? ("(" + String.join(", ", parameterClassNames) + ")") : "");
+				return element.getEnclosingElement().toString() + "." +
+						element.getEnclosingElement().getSimpleName() +
+						(parameterClassNames != null ? ("(" + String.join(", ", parameterClassNames) + ")") : "");
 			case CLASS:
 			case INTERFACE:
 			case ENUM:

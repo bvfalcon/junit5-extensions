@@ -2,6 +2,7 @@ package name.bychkov.junit5;
 
 import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.LOCAL_VARIABLE;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
@@ -17,7 +18,7 @@ import java.lang.annotation.Target;
  * @author Vladimir V. Bychkov
  * */
 @Retention(SOURCE)
-@Target({ TYPE, CONSTRUCTOR, FIELD, METHOD })
+@Target({ TYPE, CONSTRUCTOR, FIELD, METHOD, LOCAL_VARIABLE })
 @Repeatable(CheckMethod.List.class)
 @Documented
 public @interface CheckMethod
@@ -55,7 +56,7 @@ public @interface CheckMethod
 	String message() default "";
 	
 	@Retention(SOURCE)
-	@Target({ TYPE, CONSTRUCTOR, FIELD, METHOD })
+	@Target({ TYPE, CONSTRUCTOR, FIELD, METHOD, LOCAL_VARIABLE })
 	@Documented
 	@interface List
 	{

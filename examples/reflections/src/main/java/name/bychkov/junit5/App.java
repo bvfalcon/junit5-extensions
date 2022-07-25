@@ -9,7 +9,6 @@ public class App
 {
 	@CheckFields(targetClass = ParentSimpleDTO.class, values = { "variable3", "variable5" })
 	@CheckField(targetClass = ParentSimpleDTO.class, value = "CONSTANT_5")
-	@CheckConstructor(targetClass = ParentSimpleDTO.class)
 	@CheckConstructor(targetClass = ParentSimpleDTO.class, parameters = { String.class, double[].class })
 	@CheckMethod(targetClass = ParentSimpleDTO.class, value = "staticMethod2")
 	@CheckMethod(targetClass = ParentSimpleDTO.class, value = "staticMethod3", returnType = void.class)
@@ -27,5 +26,8 @@ public class App
 	@CheckMethod(targetClass = ChildSimpleDTO.class, value = "method4WithParams", returnType = String.class, parameters = { Function.class, String.class, byte.class })
 	public static void main(String[] args) throws NoSuchMethodException, SecurityException
 	{
+		@CheckConstructor(targetClass = ParentSimpleDTO.class)
+		String var= "rwretg";
+		System.out.println(1);
 	}
 }

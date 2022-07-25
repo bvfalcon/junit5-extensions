@@ -12,6 +12,14 @@
 	<description>Annotations @CheckConstructor, @CheckField, @CheckMethod @CheckKey and @CheckResourceBundle of JUnit5-Extensions</description>
 	<url>https://github.com/bvfalcon/junit5-extensions</url>
 
+	<dependencies>
+		<dependency>
+			<groupId>com.github.olivergondza</groupId>
+			<artifactId>maven-jdk-tools-wrapper</artifactId>
+			<version>0.1</version>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
