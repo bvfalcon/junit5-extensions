@@ -54,6 +54,9 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		// CheckKey.List and CheckKey
 		processCheckAnnotations(roundEnv, CheckKey.List.class, CheckKey.class, annotationItems);
 		
+		// CheckKeys.List and CheckKeys
+		processCheckAnnotations(roundEnv, CheckKeys.List.class, CheckKeys.class, annotationItems);
+		
 		// CheckResourceBundle.List and CheckResourceBundle
 		processCheckAnnotations(roundEnv, CheckResourceBundle.List.class, CheckResourceBundle.class, annotationItems);
 		
@@ -138,6 +141,10 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		else if (CheckKey.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
 		{
 			object = joinKey(annotation, element);
+		}
+		else if (CheckKeys.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
+		{
+			object = joinKeys(annotation, element);
 		}
 		else if (CheckResourceBundle.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
 		{
@@ -244,6 +251,54 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
 		object.baseName = getAnnotationRequiredAttribute(CheckKey.class, annotationParameters, "baseName");
 		object.value = getAnnotationRequiredAttribute(CheckKey.class, annotationParameters, "value");
+		object.locale = getAnnotationOptionalAttribute(annotationParameters, "locale");
+		object.annotatedElement = getAnnotatedElement(element, new String[0]);
+		return object;
+	}
+	
+	static class CheckKeysObject implements Serializable
+	{
+		private static final long serialVersionUID = 8760310613081028956L;
+		
+		String annotatedElement;
+		String baseName;
+		String[] values;
+		String locale;
+		String message;
+		
+		@Override
+		public int hashCode()
+		{
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + Arrays.hashCode(values);
+			result = prime * result + Objects.hash(annotatedElement, baseName, locale, message);
+			return result;
+		}
+		
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CheckKeysObject other = (CheckKeysObject) obj;
+			return Objects.equals(annotatedElement, other.annotatedElement) && Objects.equals(baseName, other.baseName)
+					&& Objects.equals(locale, other.locale) && Objects.equals(message, other.message)
+					&& Arrays.equals(values, other.values);
+		}
+	}
+	
+	private CheckKeysObject joinKeys(AnnotationMirror annotation, Element element)
+	{
+		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
+		CheckKeysObject object = new CheckKeysObject();
+		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
+		object.baseName = getAnnotationRequiredAttribute(CheckKeys.class, annotationParameters, "baseName");
+		object.values = getAnnotationRequiredArrayAttribute(CheckKeys.class, annotationParameters, "values");
 		object.locale = getAnnotationOptionalAttribute(annotationParameters, "locale");
 		object.annotatedElement = getAnnotatedElement(element, new String[0]);
 		return object;

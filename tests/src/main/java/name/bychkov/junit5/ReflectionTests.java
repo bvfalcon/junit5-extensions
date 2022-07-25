@@ -37,7 +37,7 @@ public class ReflectionTests extends AbstractTests
 	private static final BiFunction<Throwable, CheckFieldsObject, AssertionFailedError> fieldsExceptionProducer = (e, fieldsObject) ->
 			createAssertionFailedError(fieldsObject.message, e, "Annotation @%s on %s warns: Class %s has no accessible fields %s",
 			CheckFields.class.getSimpleName(), fieldsObject.annotatedElement, fieldsObject.targetClass,
-			Optional.ofNullable(fieldsObject.failureValues).map(o -> Arrays.asList(o)).map(List::stream).orElseGet(Stream::empty).collect(Collectors.joining(", ")));
+			Optional.ofNullable(fieldsObject.failureValues).map(Arrays::asList).map(List::stream).orElseGet(Stream::empty).collect(Collectors.joining(", ")));
 	
 	private static final BiFunction<Throwable, CheckAnnotationProcessor.CheckMethodObject, AssertionFailedError> methodExceptionProducer = (e, methodObject) ->
 			createAssertionFailedError(methodObject.message, e, "Annotation @%s on %s warns: Class %s has no accessible method %s%s%s",

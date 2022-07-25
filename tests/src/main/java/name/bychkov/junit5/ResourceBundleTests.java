@@ -12,9 +12,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -28,8 +31,13 @@ public class ResourceBundleTests extends AbstractTests
 	private static final Logger LOG = LoggerFactory.getLogger(ResourceBundleTests.class);
 	
 	private static final BiFunction<Throwable, CheckAnnotationProcessor.CheckKeyObject, AssertionFailedError> keyExceptionProducer = (e, keyObject) ->
-			createAssertionFailedError(keyObject.message, e, "Annotation @%s on %s warns: ResourceBundle with baseName %s has no key %s",
+			createAssertionFailedError(keyObject.message, e, "Annotation @%s on %s warns: ResourceBundle with base name %s has no key %s",
 			CheckKey.class.getSimpleName(), keyObject.annotatedElement, keyObject.baseName, keyObject.value);
+	
+	private static final BiFunction<Throwable, CheckKeysObject, AssertionFailedError> keysExceptionProducer = (e, keysObject) ->
+			createAssertionFailedError(keysObject.message, e, "Annotation @%s on %s warns: ResourceBundle with base name %s has no keys %s",
+			CheckKeys.class.getSimpleName(), keysObject.annotatedElement, keysObject.baseName, 
+			Optional.ofNullable(keysObject.failureValues).map(Arrays::asList).map(List::stream).orElseGet(Stream::empty).collect(Collectors.joining(", ")));
 	
 	@TestFactory
 	public Collection<DynamicTest> testResourceBundles()
@@ -44,6 +52,11 @@ public class ResourceBundleTests extends AbstractTests
 			{
 				CheckAnnotationProcessor.CheckKeyObject keyObject = (CheckAnnotationProcessor.CheckKeyObject) item;
 				test = getDynamicKeyTest(keyObject);
+			}
+			else if (item instanceof CheckAnnotationProcessor.CheckKeysObject)
+			{
+				CheckAnnotationProcessor.CheckKeysObject keysObject = (CheckAnnotationProcessor.CheckKeysObject) item;
+				test = getDynamicKeysTest(keysObject);
 			}
 			else if (item instanceof CheckAnnotationProcessor.CheckResourceBundleObject)
 			{
@@ -67,15 +80,71 @@ public class ResourceBundleTests extends AbstractTests
 			{
 				Locale locale = Locale.forLanguageTag(Objects.toString(keyObject.locale, ""));
 				ResourceBundle bundle = ResourceBundle.getBundle(keyObject.baseName, locale);
-				Object value = bundle.getObject(keyObject.value);
-				if (value == null)
+				if (!bundle.containsKey(keyObject.value))
 				{
 					throw keyExceptionProducer.apply(null, keyObject);
 				}
 			}
+			catch(MissingResourceException e)
+			{
+				throw createAssertionFailedError(keyObject.message, e, "Annotation @%s on %s warns: ResourceBundle with base name %s not found",
+						CheckKey.class.getSimpleName(), keyObject.annotatedElement, keyObject.baseName);
+			}
 			catch (Throwable e)
 			{
 				throw keyExceptionProducer.apply(e, keyObject);
+			}
+		});
+	}
+	
+	static class CheckKeysObject extends CheckAnnotationProcessor.CheckKeysObject
+	{
+		private static final long serialVersionUID = -3470371836634303128L;
+		
+		String[] failureValues;
+		
+		public CheckKeysObject(CheckAnnotationProcessor.CheckKeysObject parentObject, String[] failureValues)
+		{
+			this.annotatedElement = parentObject.annotatedElement;
+			this.baseName = parentObject.baseName;
+			this.locale = parentObject.locale;
+			this.message = parentObject.message;
+			this.values = parentObject.values;
+			this.failureValues = failureValues;
+		}
+	}
+	
+	private DynamicTest getDynamicKeysTest(CheckAnnotationProcessor.CheckKeysObject keysObject)
+	{
+		return DynamicTest.dynamicTest("testKeys", () ->
+		{
+			try
+			{
+				Locale locale = Locale.forLanguageTag(Objects.toString(keysObject.locale, ""));
+				ResourceBundle bundle = ResourceBundle.getBundle(keysObject.baseName, locale);
+				
+				List<String> failureKeys = new ArrayList<>();
+				for (String key : keysObject.values)
+				{
+					if (!bundle.containsKey(key))
+					{
+						failureKeys.add(key);
+					}
+				}
+				if (!failureKeys.isEmpty())
+				{
+					CheckKeysObject newKeysObject = new CheckKeysObject(keysObject, failureKeys.toArray(new String[failureKeys.size()]));
+					throw keysExceptionProducer.apply(null, newKeysObject);
+				}
+			}
+			catch(MissingResourceException e)
+			{
+				throw createAssertionFailedError(keysObject.message, e, "Annotation @%s on %s warns: ResourceBundle with base name %s not found",
+						CheckKeys.class.getSimpleName(), keysObject.annotatedElement, keysObject.baseName);
+			}
+			catch (Throwable e)
+			{
+				throw keysExceptionProducer.apply(e, new CheckKeysObject(keysObject, new String[0]));
 			}
 		});
 	}
@@ -115,8 +184,8 @@ public class ResourceBundleTests extends AbstractTests
 			}
 			if (!missingResourceBundles.isEmpty())
 			{
-				throw createAssertionFailedError(resourceBundleObject.message, null, "Annotation @%s on %s warns: ResourceBundles for baseName %s with locales %s was not found",
-						CheckResourceBundle.class.getSimpleName(), resourceBundleObject.annotatedElement, resourceBundleObject.baseName, String.join(", ", missingResourceBundles));
+				throw createAssertionFailedError(resourceBundleObject.message, null, "Annotation @%s on %s warns: ResourceBundles for base name %s with locales %s was not found",
+						CheckResourceBundle.class.getSimpleName(), resourceBundleObject.annotatedElement, resourceBundleObject.baseName, joinLocales(missingResourceBundles));
 			}
 			
 			// check each key
@@ -143,11 +212,16 @@ public class ResourceBundleTests extends AbstractTests
 				StringBuilder sb = new StringBuilder(System.lineSeparator());
 				for (Map.Entry<String, List<String>> entry : absentKeys.entrySet())
 				{
-					sb.append("\t").append(entry.getKey()).append(": [").append(String.join(", ", entry.getValue())).append("]").append(System.lineSeparator());
+					sb.append("\t").append(entry.getKey()).append(": [").append(joinLocales(entry.getValue())).append("]").append(System.lineSeparator());
 				}
 				throw createAssertionFailedError(resourceBundleObject.message, null, "Annotation @%s on %s warns: ResourceBundles for baseName %s has absent keys in locales:%s",
 						CheckResourceBundle.class.getSimpleName(), resourceBundleObject.annotatedElement, resourceBundleObject.baseName, sb);
 			}
 		});
+	}
+	
+	private String joinLocales(List<String> localeNames)
+	{
+		return localeNames.stream().map(o -> "'" + o + "'").collect(Collectors.joining(", "));
 	}
 }
