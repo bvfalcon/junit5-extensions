@@ -54,7 +54,6 @@ Add in your pom.xml these modifications
 	<plugins>
 		...
 		<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-surefire-plugin</artifactId>
 			<version>2.22.0</version>
 			<configuration>
