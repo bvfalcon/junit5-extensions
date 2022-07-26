@@ -78,8 +78,14 @@ public class ResourceBundleTests extends AbstractTests
 		{
 			try
 			{
-				Locale locale = Locale.forLanguageTag(Objects.toString(keyObject.locale, ""));
+				String localeStr = Objects.toString(keyObject.locale, "");
+				Locale locale = Locale.forLanguageTag(localeStr);
 				ResourceBundle bundle = ResourceBundle.getBundle(keyObject.baseName, locale);
+				if (!Objects.equals(localeStr, bundle.getLocale().toString()))
+				{
+					throw createAssertionFailedError(keyObject.message, null, "Annotation @%s on %s warns: ResourceBundle for base name %s with locale '%s' was not found",
+							CheckKey.class.getSimpleName(), keyObject.annotatedElement, keyObject.baseName, localeStr);
+				}
 				if (!bundle.containsKey(keyObject.value))
 				{
 					throw keyExceptionProducer.apply(null, keyObject);
@@ -120,8 +126,14 @@ public class ResourceBundleTests extends AbstractTests
 		{
 			try
 			{
-				Locale locale = Locale.forLanguageTag(Objects.toString(keysObject.locale, ""));
+				String localeStr = Objects.toString(keysObject.locale, "");
+				Locale locale = Locale.forLanguageTag(localeStr);
 				ResourceBundle bundle = ResourceBundle.getBundle(keysObject.baseName, locale);
+				if (!Objects.equals(localeStr, bundle.getLocale().toString()))
+				{
+					throw createAssertionFailedError(keysObject.message, null, "Annotation @%s on %s warns: ResourceBundle for base name %s with locale '%s' was not found",
+							CheckKeys.class.getSimpleName(), keysObject.annotatedElement, keysObject.baseName, localeStr);
+				}
 				
 				List<String> failureKeys = new ArrayList<>();
 				for (String key : keysObject.values)

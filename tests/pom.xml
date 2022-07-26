@@ -34,6 +34,49 @@
 		</repository>
 	</repositories>
 
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-invoker-plugin</artifactId>
+				<version>${maven-invoker-plugin.version}</version>
+				<configuration>
+					<cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+					<showErrors>true</showErrors>
+					<streamLogs>false</streamLogs>
+					<debug>true</debug>
+					<settingsFile>src/it/settings.xml</settingsFile>
+					<localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+					<mavenOpts>-Djava.io.tmpdir=${project.build.directory}/it</mavenOpts>
+					<properties>
+						<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
+						<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
+					</properties>
+				</configuration>
+				<executions>
+					<execution>
+						<id>check-examples</id>
+						<goals>
+							<goal>install</goal>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<projectsDirectory>../examples</projectsDirectory>
+							<invokerTest>*,!fakesmtp-*</invokerTest>
+						</configuration>
+					</execution>
+					<execution>
+						<id>failure-tests</id>
+						<goals>
+							<goal>install</goal>
+							<goal>run</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
 	<profiles>
 		<profile>
 			<id>jakarta.mail</id>
@@ -136,6 +179,22 @@
 							</execution>
 						</executions>
 					</plugin>
+					<plugin>
+						<artifactId>maven-invoker-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>check-jakartamail-example</id>
+								<goals>
+									<goal>install</goal>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<projectsDirectory>../examples</projectsDirectory>
+									<invokerTest>*jakartamail</invokerTest>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 				</plugins>
 			</build>
 		</profile>
@@ -185,6 +244,22 @@
 								<goals>
 									<goal>single</goal>
 								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-invoker-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>check-javamail-example</id>
+								<goals>
+									<goal>install</goal>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<projectsDirectory>../examples</projectsDirectory>
+									<invokerTest>*javamail</invokerTest>
+								</configuration>
 							</execution>
 						</executions>
 					</plugin>

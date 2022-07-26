@@ -54,6 +54,7 @@
 		<maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
 		<maven-install-plugin.version>2.5.2</maven-install-plugin.version>
 		<build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version>
+		<maven-invoker-plugin.version>3.3.0</maven-invoker-plugin.version>
 		<nexus.host>s01.oss.sonatype.org</nexus.host>
 	</properties>
 
