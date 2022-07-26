@@ -184,6 +184,7 @@
 						<executions>
 							<execution>
 								<id>check-jakartamail-example</id>
+								<phase>install</phase>
 								<goals>
 									<goal>install</goal>
 									<goal>run</goal>
