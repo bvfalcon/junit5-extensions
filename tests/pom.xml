@@ -65,7 +65,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>failure-tests</id>
+						<id>special-cases</id>
 						<goals>
 							<goal>install</goal>
 							<goal>run</goal>

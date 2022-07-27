@@ -60,6 +60,9 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		// CheckResourceBundle.List and CheckResourceBundle
 		processCheckAnnotations(roundEnv, CheckResourceBundle.List.class, CheckResourceBundle.class, annotationItems);
 		
+		// CheckSerializable.List and CheckSerializable
+		processCheckAnnotations(roundEnv, CheckSerializable.List.class, CheckSerializable.class, annotationItems);
+		
 		writeFile(annotationItems);
 		
 		return true;
@@ -149,6 +152,10 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		else if (CheckResourceBundle.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
 		{
 			object = joinResourceBundle(annotation, element);
+		}
+		else if (CheckSerializable.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
+		{
+			object = joinSerializable(annotation, element);
 		}
 		
 		if (object != null)
@@ -300,6 +307,51 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		object.baseName = getAnnotationRequiredAttribute(CheckKeys.class, annotationParameters, "baseName");
 		object.values = getAnnotationRequiredArrayAttribute(CheckKeys.class, annotationParameters, "values");
 		object.locale = getAnnotationOptionalAttribute(annotationParameters, "locale");
+		object.annotatedElement = getAnnotatedElement(element, new String[0]);
+		return object;
+	}
+	
+	static class CheckSerializableObject implements Serializable
+	{
+		private static final long serialVersionUID = -6824914762264876265L;
+		
+		String annotatedElement;
+		String targetPackage;
+		String[] excludes;
+		String message;
+		
+		@Override
+		public int hashCode()
+		{
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + Arrays.hashCode(excludes);
+			result = prime * result + Objects.hash(annotatedElement, message, targetPackage);
+			return result;
+		}
+		
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CheckSerializableObject other = (CheckSerializableObject) obj;
+			return Objects.equals(annotatedElement, other.annotatedElement) && Arrays.equals(excludes, other.excludes)
+					&& Objects.equals(message, other.message) && Objects.equals(targetPackage, other.targetPackage);
+		}
+	}
+	
+	private CheckSerializableObject joinSerializable(AnnotationMirror annotation, Element element)
+	{
+		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
+		CheckSerializableObject object = new CheckSerializableObject();
+		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
+		object.targetPackage = getAnnotationOptionalAttribute(annotationParameters, "targetPackage");
+		object.excludes = getAnnotationOptionalArrayAttribute(annotationParameters, "excludes", new String[0]);
 		object.annotatedElement = getAnnotatedElement(element, new String[0]);
 		return object;
 	}
@@ -532,6 +584,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 			case CLASS:
 			case INTERFACE:
 			case ENUM:
+			case PACKAGE:
 				return element.toString();
 			default:
 				return element.toString();
