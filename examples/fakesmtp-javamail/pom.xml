@@ -7,7 +7,7 @@
 	<artifactId>junit5-extensions-fakesmtp-javamail-example</artifactId>
 	<version>1.0-SNAPSHOT</version>
 
-	<name>JUni5-Extensions FakeSMTP with Javamail Example</name>
+	<name>JUnit5-Extensions FakeSMTP with Javamail Example</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

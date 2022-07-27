@@ -7,7 +7,7 @@
 	<artifactId>junit5-extensions-reflections-example</artifactId>
 	<version>1.0-SNAPSHOT</version>
 
-	<name>JUni5-Extensions Reflections Example</name>
+	<name>JUnit5-Extensions Reflections Example</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
