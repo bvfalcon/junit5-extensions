@@ -3,12 +3,15 @@ package name.bychkov.junit5;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -67,7 +70,7 @@ public class SerializationTest extends AbstractTests
 		return DynamicTest.dynamicTest("testSerializable", () ->
 		{
 			String packageName = Objects.toString(serializableObject.targetPackage, serializableObject.annotatedElement);
-			Predicate<Class<?>> predicate = candidate -> serializableObject.excludes == null || !Arrays.asList(serializableObject.excludes).contains(candidate.getName());
+			Predicate<Class<?>> predicate = candidate -> serializableObject.excludes == null || !Arrays.asList(serializableObject.excludes).contains(candidate.getCanonicalName());
 			List<Class<?>> classes = ReflectionUtils.findAllClassesInPackage(packageName, ClassFilter.of(predicate));
 			
 			List<String> failures = new ArrayList<>();
@@ -95,16 +98,12 @@ public class SerializationTest extends AbstractTests
 		}
 		boolean implementsSerializable = false;
 		Class<?> superclass = klass;
-		SUPERCLASS: while (superclass != null)
+		while (superclass != null)
 		{
-			List<Class<?>> interfaces = Arrays.asList(superclass.getInterfaces());
-			for (Class<?> interfaceItem : interfaces)
+			if (hasInterface(superclass, Serializable.class))
 			{
-				if (isInterfaceSerializable(interfaceItem))
-				{
-					implementsSerializable = true;
-					break SUPERCLASS;
-				}
+				implementsSerializable = true;
+				break;
 			}
 			superclass = superclass.getSuperclass();
 		}
@@ -115,15 +114,19 @@ public class SerializationTest extends AbstractTests
 		return areAllFieldsSerializable(klass);
 	}
 	
-	private boolean isInterfaceSerializable(Class<?> intrface)
+	private boolean hasInterface(Class<?> klass, Class<?> interfaceClass)
 	{
+		if (Objects.equals(klass, interfaceClass))
+		{
+			return true;
+		}
 		Set<Class<?>> allInterfaces = new HashSet<>();
-		allInterfaces.add(intrface);
+		allInterfaces.addAll(Arrays.asList(klass.getInterfaces()));
 		int previousInterfacesCount = 0;
-		int currentInterfacesCount = 1;
+		int currentInterfacesCount = allInterfaces.size();
 		while (currentInterfacesCount != previousInterfacesCount)
 		{
-			if (allInterfaces.contains(Serializable.class))
+			if (allInterfaces.contains(interfaceClass))
 			{
 				return true;
 			}
@@ -138,7 +141,7 @@ public class SerializationTest extends AbstractTests
 			currentInterfacesCount = allInterfaces.size();
 		}
 		
-		return allInterfaces.contains(Serializable.class);
+		return allInterfaces.contains(interfaceClass);
 	}
 	
 	private Predicate<Field> fieldPredicate = field -> !ModifierSupport.isStatic(field) && !Modifier.isTransient(field.getModifiers());
@@ -152,9 +155,18 @@ public class SerializationTest extends AbstractTests
 			Class<?> fieldClass = field.getType();
 			if (fieldClass.isInterface())
 			{
-				if (!isInterfaceSerializable(fieldClass))
+				if (!hasInterface(fieldClass, Serializable.class))
 				{
 					LOG.warn(() -> klass.getCanonicalName() + " -> " + field.getName() + " is defined with interface type " + fieldClass.getCanonicalName() + " and can contain unserializable implementation class");
+				}
+				if (hasInterface(fieldClass, Iterable.class)) 
+				{
+					processGenericArgument(field.getGenericType(), 0, messages, klass, field);
+				}
+				if (hasInterface(fieldClass, Map.class)) 
+				{
+					processGenericArgument(field.getGenericType(), 0, messages, klass, field);
+					processGenericArgument(field.getGenericType(), 1, messages, klass, field);
 				}
 			}
 			else
@@ -164,5 +176,47 @@ public class SerializationTest extends AbstractTests
 			}
 		}
 		return messages;
+	}
+	
+	private void processGenericArgument(Type genericType, int parameterIndex, List<String> messages, Class<?> klass, Field field)
+	{
+		Class<?> genericArgument = getGenericArgumentClass(genericType, 0);
+		List<String> itemMessages = null;
+		if (genericArgument == null)
+		{
+			LOG.warn(() -> klass.getCanonicalName() + " -> " + field.getName() + " has undefined generic type and can contain unserializable data");
+		}
+		else if ((itemMessages = isClassSerializable(genericArgument)) != null && !itemMessages.isEmpty())
+		{
+			itemMessages.forEach(itemMessage-> messages.add(klass.getCanonicalName() + " -> " + field.getName() + ":" + itemMessage));
+		}
+	}
+	
+	private Class<?> getGenericArgumentClass(Type type, int parameterIndex)
+	{
+		int actualArgumentsCount = 0;
+		String castedVariable = "type";
+		try
+		{
+			ParameterizedType castedType = (ParameterizedType) type;
+			Type[] actualArguments = castedType.getActualTypeArguments();
+			actualArgumentsCount = actualArguments != null ? actualArguments.length : 0;
+			Type genericArgumentType = actualArguments[parameterIndex];
+			castedVariable = "genericArgumentType";
+			return (Class<?>) genericArgumentType;
+		}
+		catch (ClassCastException e)
+		{
+			String message = "argument '" + castedVariable + "' has type " + type.getClass().getName() + " which will be not processed";
+			LOG.info(() -> message);
+			return null;
+		}
+		catch (ArrayIndexOutOfBoundsException e)
+		{
+			String message = "actualArguments" + (actualArgumentsCount == 0 ? " is null" : " contains " + actualArgumentsCount + " elements") +
+					" and it is impossible to get element with index " + parameterIndex;
+			LOG.warn(() -> message);
+			return null;
+		}
 	}
 }
