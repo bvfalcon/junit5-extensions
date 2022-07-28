@@ -40,6 +40,8 @@ public class SerializationTest extends AbstractTests
 			Optional.ofNullable(serializableObject.failures).map(List::stream).orElseGet(Stream::empty)
 				.map(item -> "\t" + item).collect(Collectors.joining(System.lineSeparator())));
 	
+	private Set<Class<?>> checkedNow = new HashSet<>();
+			
 	@TestFactory
 	public Collection<DynamicTest> testSerialization()
 	{
@@ -76,11 +78,13 @@ public class SerializationTest extends AbstractTests
 			List<String> failures = new ArrayList<>();
 			for (Class<?> klass : classes)
 			{
+				checkedNow.add(klass);
 				List<String> messages = isClassSerializable(klass);
 				if (!messages.isEmpty())
 				{
 					failures.addAll(messages);
 				}
+				checkedNow.remove(klass);
 			}
 			if (!failures.isEmpty())
 			{
@@ -96,56 +100,64 @@ public class SerializationTest extends AbstractTests
 		{
 			return Collections.emptyList();
 		}
-		boolean implementsSerializable = false;
-		Class<?> superclass = klass;
-		while (superclass != null)
-		{
-			if (hasInterface(superclass, Serializable.class))
-			{
-				implementsSerializable = true;
-				break;
-			}
-			superclass = superclass.getSuperclass();
-		}
-		if (!implementsSerializable)
+		if (!hasInterface(klass, Serializable.class))
 		{
 			return Arrays.asList(klass.getCanonicalName() + " -> Not implements " + Serializable.class.getCanonicalName());
 		}
 		return areAllFieldsSerializable(klass);
 	}
 	
+	/*
+	 * check klass (class or interface) implements (direct or indirect - through superclasses or other interfaces) interfaceClass
+	 * */
 	private boolean hasInterface(Class<?> klass, Class<?> interfaceClass)
 	{
-		if (Objects.equals(klass, interfaceClass))
+		Class<?> superclass = klass;
+		while (superclass != null)
 		{
-			return true;
-		}
-		Set<Class<?>> allInterfaces = new HashSet<>();
-		allInterfaces.addAll(Arrays.asList(klass.getInterfaces()));
-		int previousInterfacesCount = 0;
-		int currentInterfacesCount = allInterfaces.size();
-		while (currentInterfacesCount != previousInterfacesCount)
-		{
-			if (allInterfaces.contains(interfaceClass))
+			if (Objects.equals(superclass, interfaceClass))
 			{
 				return true;
 			}
-			previousInterfacesCount = currentInterfacesCount;
-			Set<Class<?>> itemInterfaces = new HashSet<>();
-			itemInterfaces.addAll(allInterfaces);
-			for (Class<?> item : allInterfaces)
+			Set<Class<?>> allInterfaces = new HashSet<>();
+			allInterfaces.addAll(Arrays.asList(superclass.getInterfaces()));
+			int previousInterfacesCount = 0;
+			int currentInterfacesCount = allInterfaces.size();
+			while (currentInterfacesCount != previousInterfacesCount)
 			{
-				itemInterfaces.addAll(Arrays.asList(item.getInterfaces()));
+				if (allInterfaces.contains(interfaceClass))
+				{
+					final Class<?> tmp = superclass;
+					LOG.info(() -> tmp.getCanonicalName() + " is Serializable");
+					return true;
+				}
+				previousInterfacesCount = currentInterfacesCount;
+				Set<Class<?>> itemInterfaces = new HashSet<>();
+				itemInterfaces.addAll(allInterfaces);
+				for (Class<?> item : allInterfaces)
+				{
+					itemInterfaces.addAll(Arrays.asList(item.getInterfaces()));
+				}
+				allInterfaces = itemInterfaces;
+				currentInterfacesCount = allInterfaces.size();
 			}
-			allInterfaces = itemInterfaces;
-			currentInterfacesCount = allInterfaces.size();
+			if (allInterfaces.contains(interfaceClass))
+			{
+				final Class<?> tmp = superclass;
+				LOG.info(() -> tmp.getCanonicalName() + " is Serializable");
+				return true;
+			}
+			superclass = superclass.getSuperclass();
 		}
-		
-		return allInterfaces.contains(interfaceClass);
+		LOG.info(() -> klass.getCanonicalName() + " is not Serializable");
+		return false;
 	}
 	
 	private Predicate<Field> fieldPredicate = field -> !ModifierSupport.isStatic(field) && !Modifier.isTransient(field.getModifiers());
 	
+	/*
+	 * check all fields of klass that they are serializable
+	 * */
 	private List<String> areAllFieldsSerializable(Class<?> klass)
 	{
 		List<Field> fields = ReflectionUtils.findFields(klass, fieldPredicate, HierarchyTraversalMode.TOP_DOWN);
@@ -153,6 +165,11 @@ public class SerializationTest extends AbstractTests
 		for (Field field : fields)
 		{
 			Class<?> fieldClass = field.getType();
+			if (checkedNow.contains(fieldClass))
+			{
+				return Collections.emptyList();
+			}
+			checkedNow.add(fieldClass);
 			if (fieldClass.isInterface())
 			{
 				if (!hasInterface(fieldClass, Serializable.class))
@@ -174,13 +191,14 @@ public class SerializationTest extends AbstractTests
 				List<String> itemMessages = isClassSerializable(fieldClass);
 				itemMessages.forEach(itemMessage-> messages.add(klass.getCanonicalName() + " -> " + field.getName() + ":" + itemMessage));
 			}
+			checkedNow.remove(fieldClass);
 		}
 		return messages;
 	}
 	
 	private void processGenericArgument(Type genericType, int parameterIndex, List<String> messages, Class<?> klass, Field field)
 	{
-		Class<?> genericArgument = getGenericArgumentClass(genericType, 0);
+		Class<?> genericArgument = getGenericArgumentClass(genericType, parameterIndex);
 		List<String> itemMessages = null;
 		if (genericArgument == null)
 		{
@@ -192,6 +210,10 @@ public class SerializationTest extends AbstractTests
 		}
 	}
 	
+	/*
+	 * get class of generic argument
+	 * if exception acquired, returns null
+	 * */
 	private Class<?> getGenericArgumentClass(Type type, int parameterIndex)
 	{
 		int actualArgumentsCount = 0;
