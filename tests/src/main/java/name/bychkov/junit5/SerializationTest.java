@@ -40,7 +40,8 @@ public class SerializationTest extends AbstractTests
 			Optional.ofNullable(serializableObject.failures).map(List::stream).orElseGet(Stream::empty)
 				.map(item -> "\t" + item).collect(Collectors.joining(System.lineSeparator())));
 	
-	private Set<Class<?>> checkedNow = new HashSet<>();
+	/* prevent circular checks */
+	private Set<Class<?>> checking = new HashSet<>();
 			
 	@TestFactory
 	public Collection<DynamicTest> testSerialization()
@@ -78,13 +79,13 @@ public class SerializationTest extends AbstractTests
 			List<String> failures = new ArrayList<>();
 			for (Class<?> klass : classes)
 			{
-				checkedNow.add(klass);
+				checking.add(klass);
 				List<String> messages = isClassSerializable(klass);
 				if (!messages.isEmpty())
 				{
 					failures.addAll(messages);
 				}
-				checkedNow.remove(klass);
+				checking.remove(klass);
 			}
 			if (!failures.isEmpty())
 			{
@@ -165,11 +166,11 @@ public class SerializationTest extends AbstractTests
 		for (Field field : fields)
 		{
 			Class<?> fieldClass = field.getType();
-			if (checkedNow.contains(fieldClass))
+			if (checking.contains(fieldClass))
 			{
 				return Collections.emptyList();
 			}
-			checkedNow.add(fieldClass);
+			checking.add(fieldClass);
 			if (fieldClass.isInterface())
 			{
 				if (!hasInterface(fieldClass, Serializable.class))
@@ -191,7 +192,7 @@ public class SerializationTest extends AbstractTests
 				List<String> itemMessages = isClassSerializable(fieldClass);
 				itemMessages.forEach(itemMessage-> messages.add(klass.getCanonicalName() + " -> " + field.getName() + ":" + itemMessage));
 			}
-			checkedNow.remove(fieldClass);
+			checking.remove(fieldClass);
 		}
 		return messages;
 	}

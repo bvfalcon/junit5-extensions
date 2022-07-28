@@ -9,6 +9,8 @@ public class ChildSimpleDTO extends ParentSimpleDTO
 	
 	private ParentSimpleDTO parent;
 	
+	private ChildSimpleDTO self;
+	
 	private Collection<?> collectionField;
 	
 	private Set setField;
