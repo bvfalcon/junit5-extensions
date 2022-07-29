@@ -1,6 +1,7 @@
 package name.bychkov.junit5.model;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ public class ParentSimpleDTO implements Serializable
 	
 	private List<String> listField;
 	
-	private List<List<String>> list2Field;
+	private List<List<Map<String, Collection<Long>>>> genericsField;
 	
 	private Map<Long, Double> mapField;
 	

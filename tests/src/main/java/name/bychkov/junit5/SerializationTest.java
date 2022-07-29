@@ -42,7 +42,7 @@ public class SerializationTest extends AbstractTests
 	
 	/* prevent circular checks */
 	private Set<Class<?>> checking = new HashSet<>();
-			
+	
 	@TestFactory
 	public Collection<DynamicTest> testSerialization()
 	{
@@ -55,7 +55,7 @@ public class SerializationTest extends AbstractTests
 	static class CheckSerializableObject extends CheckAnnotationProcessor.CheckSerializableObject
 	{
 		private static final long serialVersionUID = 7033531351868206885L;
-
+		
 		List<String> failures;
 		
 		public CheckSerializableObject(CheckAnnotationProcessor.CheckSerializableObject parentObject, List<String> failures)
@@ -110,7 +110,7 @@ public class SerializationTest extends AbstractTests
 	
 	/*
 	 * check klass (class or interface) implements (direct or indirect - through superclasses or other interfaces) interfaceClass
-	 * */
+	 */
 	static boolean hasInterface(Class<?> klass, Class<?> interfaceClass)
 	{
 		Class<?> superclass = klass;
@@ -153,7 +153,7 @@ public class SerializationTest extends AbstractTests
 	
 	/*
 	 * check all fields of klass that they are serializable
-	 * */
+	 */
 	private List<String> areAllFieldsSerializable(Class<?> klass)
 	{
 		List<Field> fields = ReflectionUtils.findFields(klass, fieldPredicate, HierarchyTraversalMode.TOP_DOWN);
@@ -172,11 +172,11 @@ public class SerializationTest extends AbstractTests
 				{
 					LOG.warn(() -> klass.getCanonicalName() + " -> " + field.getName() + " is defined with interface type " + fieldClass.getCanonicalName() + " and can contain unserializable implementation class");
 				}
-				if (hasInterface(fieldClass, Iterable.class)) 
+				if (hasInterface(fieldClass, Iterable.class))
 				{
 					processGenericArgument(field.getGenericType(), 0, messages, klass, field);
 				}
-				if (hasInterface(fieldClass, Map.class)) 
+				if (hasInterface(fieldClass, Map.class))
 				{
 					processGenericArgument(field.getGenericType(), 0, messages, klass, field);
 					processGenericArgument(field.getGenericType(), 1, messages, klass, field);
@@ -185,7 +185,7 @@ public class SerializationTest extends AbstractTests
 			else
 			{
 				List<String> itemMessages = isClassSerializable(fieldClass);
-				itemMessages.forEach(itemMessage-> messages.add(klass.getCanonicalName() + " -> " + field.getName() + ":" + itemMessage));
+				itemMessages.forEach(itemMessage -> messages.add(klass.getCanonicalName() + " -> " + field.getName() + ":" + itemMessage));
 			}
 			checking.remove(fieldClass);
 		}
@@ -194,52 +194,53 @@ public class SerializationTest extends AbstractTests
 	
 	private void processGenericArgument(Type genericType, int parameterIndex, List<String> messages, Class<?> klass, Field field)
 	{
-		Class<?> genericArgument = getGenericArgumentClass(genericType, parameterIndex);
+		Type genericArgumentType = getGenericArgumentType(genericType, parameterIndex);
+		Class<?> genericArgumentClass = toClass(genericArgumentType);
 		List<String> itemMessages = null;
-		if (genericArgument == null)
+		if (genericArgumentClass == null)
 		{
 			LOG.warn(() -> klass.getCanonicalName() + " -> " + field.getName() + " has undefined generic type and can contain unserializable data");
 		}
-		else if (genericArgument.isInterface())
+		else if (genericArgumentClass.isInterface())
 		{
-			if (!hasInterface(genericArgument, Serializable.class))
+			if (!hasInterface(genericArgumentClass, Serializable.class))
 			{
 				LOG.warn(() -> klass.getCanonicalName() + " -> " + field.getName() + " is defined with interface type " + genericType.getTypeName() + " and can contain unserializable implementation class");
 			}
+			if (hasInterface(genericArgumentClass, Iterable.class))
+			{
+				processGenericArgument(genericArgumentType, 0, messages, klass, field);
+			}
+			if (hasInterface(genericArgumentClass, Map.class))
+			{
+				processGenericArgument(genericArgumentType, 0, messages, klass, field);
+				processGenericArgument(genericArgumentType, 1, messages, klass, field);
+			}
 		}
-		else if ((itemMessages = isClassSerializable(genericArgument)) != null && !itemMessages.isEmpty())
+		else if ((itemMessages = isClassSerializable(genericArgumentClass)) != null && !itemMessages.isEmpty())
 		{
-			itemMessages.forEach(itemMessage-> messages.add(klass.getCanonicalName() + " -> " + field.getName() + ":" + itemMessage));
+			itemMessages.forEach(itemMessage -> messages.add(klass.getCanonicalName() + " -> " + field.getName() + ":" + itemMessage));
 		}
 	}
 	
 	/*
-	 * get class of generic argument
+	 * get type of generic argument
 	 * if exception acquired, returns null
-	 * */
-	static Class<?> getGenericArgumentClass(Type type, int parameterIndex)
+	 */
+	static Type getGenericArgumentType(Type type, int parameterIndex)
 	{
 		int actualArgumentsCount = 0;
-		String castedVariable = "type";
 		try
 		{
 			ParameterizedType castedType = (ParameterizedType) type;
 			Type[] actualArguments = castedType.getActualTypeArguments();
 			actualArgumentsCount = actualArguments != null ? actualArguments.length : 0;
 			Type genericArgumentType = actualArguments[parameterIndex];
-			castedVariable = "genericArgumentType";
-			if (genericArgumentType instanceof ParameterizedType)
-			{
-				return (Class<?>) ((ParameterizedType) genericArgumentType).getRawType();
-			}
-			else
-			{
-				return (Class<?>) genericArgumentType;
-			}
+			return genericArgumentType;
 		}
 		catch (ClassCastException e)
 		{
-			String message = "argument '" + castedVariable + "' has type " + type.getClass().getName() + " which will be not processed";
+			String message = "argument 'type' has type " + type.getClass().getName() + " which will be not processed";
 			LOG.info(() -> message);
 			return null;
 		}
@@ -248,6 +249,35 @@ public class SerializationTest extends AbstractTests
 			String message = "actualArguments" + (actualArgumentsCount == 0 ? " is null" : " contains " + actualArgumentsCount + " elements") +
 					" and it is impossible to get element with index " + parameterIndex;
 			LOG.warn(() -> message);
+			return null;
+		}
+	}
+	
+	/*
+	 * converts type to class
+	 * if exception acquired, returns null
+	 */
+	static Class<?> toClass(Type type)
+	{
+		if (type == null)
+		{
+			return null;
+		}
+		try
+		{
+			if (type instanceof ParameterizedType)
+			{
+				return (Class<?>) ((ParameterizedType) type).getRawType();
+			}
+			else
+			{
+				return (Class<?>) type;
+			}
+		}
+		catch (ClassCastException e)
+		{
+			String message = "argument 'type' has type " + type.getClass().getName() + " which will be not processed";
+			LOG.info(() -> message);
 			return null;
 		}
 	}

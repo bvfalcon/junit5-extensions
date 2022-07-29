@@ -1,6 +1,7 @@
 package name.bychkov.junit5;
 
-import static name.bychkov.junit5.SerializationTest.getGenericArgumentClass;
+import static name.bychkov.junit5.SerializationTest.getGenericArgumentType;
+import static name.bychkov.junit5.SerializationTest.toClass;
 import static name.bychkov.junit5.SerializationTest.hasInterface;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,6 +13,7 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 
 import javax.naming.CompositeName;
@@ -51,16 +53,16 @@ public class TestSerializationTest
 	@Test
 	public void testGetGenericArgumentClass() throws NoSuchFieldException, SecurityException
 	{
-		assertNull(getGenericArgumentClass(getType("field1"), 0));
-		assertNull(getGenericArgumentClass(getType("field2"), 0));
-		assertEquals(String.class, getGenericArgumentClass(getType("field3"), 0));
-		assertNull(getGenericArgumentClass(getType("field4"), 0));
-		assertNull(getGenericArgumentClass(getType("field5"), 0));
-		assertEquals(List.class, getGenericArgumentClass(getType("field6"), 0));
-		assertEquals(List.class, getGenericArgumentClass(getType("field7"), 0));
-		assertEquals(List.class, getGenericArgumentClass(getType("field8"), 0));
-		assertEquals(List.class, getGenericArgumentClass(getType("field9"), 0));
-		assertEquals(List.class, getGenericArgumentClass(getType("field10"), 0));
+		assertNull(toClass(getGenericArgumentType(getType("field1"), 0)));
+		assertNull(toClass(getGenericArgumentType(getType("field2"), 0)));
+		assertEquals(String.class, toClass(getGenericArgumentType(getType("field3"), 0)));
+		assertNull(toClass(getGenericArgumentType(getType("field4"), 0)));
+		assertNull(toClass(getGenericArgumentType(getType("field5"), 0)));
+		assertEquals(List.class, toClass(getGenericArgumentType(getType("field6"), 0)));
+		assertEquals(List.class, toClass(getGenericArgumentType(getType("field7"), 0)));
+		assertEquals(List.class, toClass(getGenericArgumentType(getType("field8"), 0)));
+		assertEquals(List.class, toClass(getGenericArgumentType(getType("field9"), 0)));
+		assertEquals(List.class, toClass(getGenericArgumentType(getType("field10"), 0)));
 	}
 	
 	private Type getType(String fieldName) throws NoSuchFieldException, SecurityException
