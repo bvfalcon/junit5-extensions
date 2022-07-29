@@ -111,7 +111,7 @@ public class SerializationTest extends AbstractTests
 	/*
 	 * check klass (class or interface) implements (direct or indirect - through superclasses or other interfaces) interfaceClass
 	 * */
-	private boolean hasInterface(Class<?> klass, Class<?> interfaceClass)
+	static boolean hasInterface(Class<?> klass, Class<?> interfaceClass)
 	{
 		Class<?> superclass = klass;
 		while (superclass != null)
@@ -128,8 +128,6 @@ public class SerializationTest extends AbstractTests
 			{
 				if (allInterfaces.contains(interfaceClass))
 				{
-					final Class<?> tmp = superclass;
-					LOG.info(() -> tmp.getCanonicalName() + " is Serializable");
 					return true;
 				}
 				previousInterfacesCount = currentInterfacesCount;
@@ -144,13 +142,10 @@ public class SerializationTest extends AbstractTests
 			}
 			if (allInterfaces.contains(interfaceClass))
 			{
-				final Class<?> tmp = superclass;
-				LOG.info(() -> tmp.getCanonicalName() + " is Serializable");
 				return true;
 			}
 			superclass = superclass.getSuperclass();
 		}
-		LOG.info(() -> klass.getCanonicalName() + " is not Serializable");
 		return false;
 	}
 	
@@ -215,7 +210,7 @@ public class SerializationTest extends AbstractTests
 	 * get class of generic argument
 	 * if exception acquired, returns null
 	 * */
-	private Class<?> getGenericArgumentClass(Type type, int parameterIndex)
+	static Class<?> getGenericArgumentClass(Type type, int parameterIndex)
 	{
 		int actualArgumentsCount = 0;
 		String castedVariable = "type";
@@ -226,7 +221,14 @@ public class SerializationTest extends AbstractTests
 			actualArgumentsCount = actualArguments != null ? actualArguments.length : 0;
 			Type genericArgumentType = actualArguments[parameterIndex];
 			castedVariable = "genericArgumentType";
-			return (Class<?>) genericArgumentType;
+			if (genericArgumentType instanceof ParameterizedType)
+			{
+				return (Class<?>) ((ParameterizedType) genericArgumentType).getRawType();
+			}
+			else
+			{
+				return (Class<?>) genericArgumentType;
+			}
 		}
 		catch (ClassCastException e)
 		{
