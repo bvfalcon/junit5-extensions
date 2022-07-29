@@ -8,18 +8,9 @@ Useful features for testing with JUnit 5: FakeSMTP, reflections and resource bun
 * [Using in your project](#using-in-your-project)
 * [Features](#features)
   * [Safely work with reflections](#safely-work-with-reflections)
-    * [Problem description](#problem-description)
-    * [Solution](#solution)
-    * [More samples](#more-samples)
   * [Safely work with resource bundles](#safely-work-with-resource-bundles)
-    * [Problem description](#problem-description-1)
-    * [Solution](#solution-1)
-    * [More samples](#more-samples-1)
   * [Unit-testing with fake smtp-server](#unit-testing-with-fake-smtp-server)
-    * [Problem description](#problem-description-2)
-    * [Solution](#solution-2)
-    * [JavaMail and Jakarta Mail](#javamail-and-jakarta-mail)
-    * [More samples](#more-samples-2)
+  * [Check classes for Serializable](#check-classes-for-serializable)
 
 ### Minimum requirements
 - Java 8
@@ -236,3 +227,23 @@ By default, implementation uses JavaMail realization (namespaces `javax.mail.`).
 
 You can see full examples of usage JUnit5-Extensions FakeSMTP with [JavaMail](./examples/fakesmtp-javamail/) and [Jakarta Mail](./examples/fakesmtp-jakartamail/).
 
+## Check classes for Serializable
+
+### Problem description
+
+In some cases some of your classes must be serializable (must implement java.io.Serializable). If class has no such interface, in most of cases java-compiler says nothing and an error in runtime can be acquired. 
+
+### Solution
+
+in java-package with serializable classes add file `package-info.java` with such contents:
+
+```java
+@CheckSerializable
+package your.package.name;
+``` 
+
+When added, this annotation forced to run unit-test for check all classes of `your.package.name` and fails if any class not implements java.io.Serializable.
+
+### More samples
+
+[Here](./examples/serializable/) you can see full examples of usage JUnit5-Extensions annotation `@CheckSerializable`.

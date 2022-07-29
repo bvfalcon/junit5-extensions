@@ -55,6 +55,7 @@
 		<maven-install-plugin.version>2.5.2</maven-install-plugin.version>
 		<build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version>
 		<maven-invoker-plugin.version>3.3.0</maven-invoker-plugin.version>
+		<maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
 		<nexus.host>s01.oss.sonatype.org</nexus.host>
 	</properties>
 

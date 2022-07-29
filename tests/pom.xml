@@ -37,10 +37,13 @@
 	<build>
 		<plugins>
 			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven-surefire-plugin.version}</version>
+			</plugin>
+			<plugin>
 				<artifactId>maven-invoker-plugin</artifactId>
 				<version>${maven-invoker-plugin.version}</version>
 				<configuration>
-					<cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
 					<showErrors>true</showErrors>
 					<streamLogs>false</streamLogs>
 					<debug>true</debug>
@@ -60,17 +63,21 @@
 							<goal>run</goal>
 						</goals>
 						<configuration>
+							<cloneProjectsTo>${project.build.directory}/it-examples</cloneProjectsTo>
 							<projectsDirectory>../examples</projectsDirectory>
 							<invokerTest>*,!fakesmtp-*</invokerTest>
 						</configuration>
 					</execution>
 					<execution>
-						<id>failure-tests</id>
+						<id>special-cases</id>
 						<goals>
 							<goal>install</goal>
 							<goal>run</goal>
 							<goal>verify</goal>
 						</goals>
+						<configuration>
+							<cloneProjectsTo>${project.build.directory}/it-special-cases</cloneProjectsTo>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -190,6 +197,7 @@
 									<goal>run</goal>
 								</goals>
 								<configuration>
+									<cloneProjectsTo>${project.build.directory}/it-jakartamail-example</cloneProjectsTo>
 									<projectsDirectory>../examples</projectsDirectory>
 									<invokerTest>*jakartamail</invokerTest>
 								</configuration>
@@ -258,6 +266,7 @@
 									<goal>run</goal>
 								</goals>
 								<configuration>
+									<cloneProjectsTo>${project.build.directory}/it-javamail-example</cloneProjectsTo>
 									<projectsDirectory>../examples</projectsDirectory>
 									<invokerTest>*javamail</invokerTest>
 								</configuration>
