@@ -2,6 +2,7 @@ package name.bychkov.junit5;
 
 import java.util.function.Function;
 
+@CheckConstructor(targetClass = SimpleDTO.class)
 @CheckField(targetClass = ParentSimpleDTO.class, value = "CONSTANT_1")
 @CheckConstructor(targetClass = ChildSimpleDTO.class)
 @CheckMethod(targetClass = ChildSimpleDTO.class, value = "finalMethod4", returnType = void.class)
