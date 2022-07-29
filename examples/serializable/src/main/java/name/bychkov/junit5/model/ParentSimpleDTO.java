@@ -12,6 +12,8 @@ public class ParentSimpleDTO implements Serializable
 	
 	private List<String> listField;
 	
+	private List<List<String>> list2Field;
+	
 	private Map<Long, Double> mapField;
 	
 	private byte byteField;

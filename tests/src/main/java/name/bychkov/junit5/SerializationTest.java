@@ -200,6 +200,13 @@ public class SerializationTest extends AbstractTests
 		{
 			LOG.warn(() -> klass.getCanonicalName() + " -> " + field.getName() + " has undefined generic type and can contain unserializable data");
 		}
+		else if (genericArgument.isInterface())
+		{
+			if (!hasInterface(genericArgument, Serializable.class))
+			{
+				LOG.warn(() -> klass.getCanonicalName() + " -> " + field.getName() + " is defined with interface type " + genericType.getTypeName() + " and can contain unserializable implementation class");
+			}
+		}
 		else if ((itemMessages = isClassSerializable(genericArgument)) != null && !itemMessages.isEmpty())
 		{
 			itemMessages.forEach(itemMessage-> messages.add(klass.getCanonicalName() + " -> " + field.getName() + ":" + itemMessage));
