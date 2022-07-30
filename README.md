@@ -1,7 +1,7 @@
 # JUnit5-Extensions
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/name.bychkov/junit5-extensions/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/name.bychkov/junit5-extensions)
 
-Useful features for testing with JUnit 5: FakeSMTP, reflections and resource bundles.
+Useful features for testing with JUnit 5: FakeSMTP, reflections, resource bundles, serializable.
 
 ## Table fo contents
   * [Minimum requirements](#minimum-requirements)

@@ -7,7 +7,7 @@
 	<packaging>pom</packaging>
 
 	<name>JUnit5-Extensions Parent</name>
-	<description>Useful features for testing with JUnit 5: FakeSMTP, reflections and resource bundles</description>
+	<description>Useful features for testing with JUnit 5: FakeSMTP, reflections, resource bundles and serializable</description>
 	<url>https://github.com/bvfalcon/junit5-extensions</url>
 
 	<scm>
