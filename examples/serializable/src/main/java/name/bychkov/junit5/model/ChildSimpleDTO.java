@@ -14,4 +14,6 @@ public class ChildSimpleDTO extends ParentSimpleDTO
 	private Collection<?> collectionField;
 	
 	private Set setField;
+
+	private transient Object objField;
 }
