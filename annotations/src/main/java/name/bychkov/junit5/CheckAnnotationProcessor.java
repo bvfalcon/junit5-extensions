@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.zip.GZIPOutputStream;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -74,14 +75,17 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		{
 			FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", dataFileLocation);
 			try (OutputStream writer = fileObject.openOutputStream();
-					ByteArrayOutputStream bos = new ByteArrayOutputStream())
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					GZIPOutputStream gzip = new GZIPOutputStream(writer))
 			{
 				ObjectOutputStream out = null;
 				out = new ObjectOutputStream(bos);
 				out.writeObject(annotationItems);
 				out.flush();
 				byte[] bytes = bos.toByteArray();
-				writer.write(bytes);
+				
+				gzip.write(bytes);
+				gzip.flush();
 			}
 		}
 		catch (Throwable e)

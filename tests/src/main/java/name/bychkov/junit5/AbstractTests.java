@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
@@ -37,7 +38,7 @@ abstract class AbstractTests
 					outputStream.write(buf, 0, readLen);
 				}
 				byte[] bytes = outputStream.toByteArray();
-				ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(bytes));
+				ObjectInput in = new ObjectInputStream(new GZIPInputStream(new ByteArrayInputStream(bytes)));
 				return (Set<Serializable>) in.readObject();
 			}
 		}
