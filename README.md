@@ -1,7 +1,7 @@
 # JUnit5-Extensions
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/name.bychkov/junit5-extensions/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/name.bychkov/junit5-extensions)
 
-Useful features for testing with JUnit 5: FakeSMTP, reflections, resource bundles, serializable.
+Useful features for testing with JUnit 5: autogenerating tests for reflections, resource bundles, serializable.
 
 ## Table fo contents
   * [Minimum requirements](#minimum-requirements)
@@ -9,7 +9,6 @@ Useful features for testing with JUnit 5: FakeSMTP, reflections, resource bundle
 * [Features](#features)
   * [Safely work with reflections](#safely-work-with-reflections)
   * [Safely work with resource bundles](#safely-work-with-resource-bundles)
-  * [Unit-testing with fake smtp-server](#unit-testing-with-fake-smtp-server)
   * [Check classes for Serializable](#check-classes-for-serializable)
 
 ### Minimum requirements
@@ -146,86 +145,6 @@ With annotations `@CheckKey`, `@CheckKeys` and `@CheckResourceBundle` you can be
 ### More samples
 
 Full example you can find [here: examples/resource-bundle](./examples/resource-bundle).
-
-## Unit-testing with fake smtp-server
-
-### Problem description
-
-Suppose, your application sends emails to users with such or similar code:
-
-```java
-public class SendEmailService {
-
-	public void sendMessage(String email, String subject, String body) throws MessagingException {
-		Properties props = System.getProperties();
-		props.put("mail.smtp.host", "localhost");
-		props.put("mail.smtp.port", "25");
-		Session session = Session.getInstance(props, null);
-		
-		Message simpleMail = new MimeMessage(session);
-	
-		simpleMail.setSubject(subject);
-		simpleMail.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
-	
-		MimeMultipart mailContent = new MimeMultipart();
-	
-		MimeBodyPart mailMessage = new MimeBodyPart();
-		mailMessage.setContent(body, "text/html; charset=utf-8");
-		mailContent.addBodyPart(mailMessage);
-	
-		simpleMail.setContent(mailContent);
-	
-		Transport.send(simpleMail);
-	}
-}
-```
-
-You must be sure this functionality will work orrect in future and not break, while the code changes. How can you do this? Every time you can start simple smpt-server locally. After tests runned, see messages and prove it. For small projects this is only uncomfortable, for large - impossible.
-
-### Solution
-
-These actions can be performed automatically. Use in code of your unit-test special extension and smtp-server will start and stop automatically:
-
-```java
-	@RegisterExtension
-	static FakeSmtpJUnitExtension fakeSmtp = new FakeSmtpJUnitExtension();
-	
-	@Test
-	public void testSendMessage() {
-		String expectedReceiver = "test-email-" + new Random().nextInt(Integer.MAX_VALUE) + "@example.com";
-		String expectedSubject = "test-subject-" + new Random().nextInt(Integer.MAX_VALUE);
-		
-		try {
-			SendEmailService testedService = new SendEmailService();
-			testedService.sendMessage(expectedReceiver, expectedSubject, "text of body");
-			
-			Assertions.assertEquals(1, fakeSmtp.getMessages().size());
-			MimeMessage actualMail = fakeSmtp.getMessages().iterator().next();
-			Assertions.assertEquals(expectedReceiver, actualMail.getAllRecipients()[0].toString());
-			Assertions.assertEquals(expectedSubject, actualMail.getSubject());
-		} catch (MessagingException e) {
-			Assertions.fail(e);
-		}
-	}
-```
-
-### JavaMail and Jakarta Mail
-
-By default, implementation uses JavaMail realization (namespaces `javax.mail.`). If you use Jakarta Mail (namespaces `jakarta.mail.`), use dependency with classifier `jakarta`:
-
-```xml
-<dependency>
-	<groupId>name.bychkov</groupId>
-	<artifactId>junit5-tests</artifactId>
-	<version>1.0-SNAPSHOT</version>
-	<classifier>jakarta</classifier>
-	<scope>test</scope>
-</dependency>
-```
-
-### More samples
-
-You can see full examples of usage JUnit5-Extensions FakeSMTP with [JavaMail](./examples/fakesmtp-javamail/) and [Jakarta Mail](./examples/fakesmtp-jakartamail/).
 
 ## Check classes for Serializable
 
