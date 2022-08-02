@@ -72,9 +72,9 @@ Suppose you have a code in your project
 
 ```java
 void clearCachedSettings() throws Exception {
-    Field mavenSettings = MavenSettings.class.getDeclaredField("mavenSettings");
-    mavenSettings.setAccessible(true);
-    mavenSettings.set(null, null);
+	Field mavenSettings = MavenSettings.class.getDeclaredField("mavenSettings");
+	mavenSettings.setAccessible(true);
+	mavenSettings.set(null, null);
 }
 ```
 
