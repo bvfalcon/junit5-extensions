@@ -43,7 +43,7 @@ public class ResourceBundleTests extends AbstractTests
 	public Collection<DynamicTest> testResourceBundles()
 	{
 		Collection<DynamicTest> tests = new ArrayList<>();
-		Collection<Serializable> annotationClasses = readFile();
+		Collection<Serializable> annotationClasses = readFile(CheckAnnotationProcessor.RESOURCE_BUNDLES_DATA_FILE_LOCATION);
 		
 		for (Serializable item : annotationClasses)
 		{

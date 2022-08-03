@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.zip.GZIPOutputStream;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -33,59 +32,69 @@ import javax.tools.StandardLocation;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class CheckAnnotationProcessor extends AbstractProcessor
 {
-	static final String dataFileLocation = "META-INF/maven/name.bychkov/junit5-extensions/data.dat";
+	static final String REFLECTIONS_DATA_FILE_LOCATION = "META-INF/maven/name.bychkov/junit5-extensions/reflections-data.dat";
+	static final String RESOURCE_BUNDLES_DATA_FILE_LOCATION = "META-INF/maven/name.bychkov/junit5-extensions/resource-bundles-data.dat";
+	static final String SERIALIZABLE_DATA_FILE_LOCATION = "META-INF/maven/name.bychkov/junit5-extensions/serializable-data.dat";
 	
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
 	{
-		Set<Serializable> annotationItems = new HashSet<>();
+		Set<Serializable> reflectionsAnnotationItems = new HashSet<>();
 		
 		// CheckConstructor.List and CheckConstructor
-		processCheckAnnotations(roundEnv, CheckConstructor.List.class, CheckConstructor.class, annotationItems);
+		processCheckAnnotations(roundEnv, CheckConstructor.List.class, CheckConstructor.class, reflectionsAnnotationItems);
 		
 		// CheckMethod.List and CheckMethod
-		processCheckAnnotations(roundEnv, CheckMethod.List.class, CheckMethod.class, annotationItems);
+		processCheckAnnotations(roundEnv, CheckMethod.List.class, CheckMethod.class, reflectionsAnnotationItems);
 		
 		// CheckField.List and CheckField
-		processCheckAnnotations(roundEnv, CheckField.List.class, CheckField.class, annotationItems);
+		processCheckAnnotations(roundEnv, CheckField.List.class, CheckField.class, reflectionsAnnotationItems);
 		
 		// CheckFields.List and CheckFields
-		processCheckAnnotations(roundEnv, CheckFields.List.class, CheckFields.class, annotationItems);
+		processCheckAnnotations(roundEnv, CheckFields.List.class, CheckFields.class, reflectionsAnnotationItems);
+		
+		writeFile(REFLECTIONS_DATA_FILE_LOCATION, reflectionsAnnotationItems);
+		
+		
+		Set<Serializable> resourceBundlesAnnotationItems = new HashSet<>();
 		
 		// CheckKey.List and CheckKey
-		processCheckAnnotations(roundEnv, CheckKey.List.class, CheckKey.class, annotationItems);
+		processCheckAnnotations(roundEnv, CheckKey.List.class, CheckKey.class, resourceBundlesAnnotationItems);
 		
 		// CheckKeys.List and CheckKeys
-		processCheckAnnotations(roundEnv, CheckKeys.List.class, CheckKeys.class, annotationItems);
+		processCheckAnnotations(roundEnv, CheckKeys.List.class, CheckKeys.class, resourceBundlesAnnotationItems);
 		
 		// CheckResourceBundle.List and CheckResourceBundle
-		processCheckAnnotations(roundEnv, CheckResourceBundle.List.class, CheckResourceBundle.class, annotationItems);
+		processCheckAnnotations(roundEnv, CheckResourceBundle.List.class, CheckResourceBundle.class, resourceBundlesAnnotationItems);
+		
+		writeFile(RESOURCE_BUNDLES_DATA_FILE_LOCATION, resourceBundlesAnnotationItems);
+		
+		
+		Set<Serializable> serializableAnnotationItems = new HashSet<>();
 		
 		// CheckSerializable.List and CheckSerializable
-		processCheckAnnotations(roundEnv, CheckSerializable.List.class, CheckSerializable.class, annotationItems);
+		processCheckAnnotations(roundEnv, CheckSerializable.List.class, CheckSerializable.class, serializableAnnotationItems);
 		
-		writeFile(annotationItems);
+		writeFile(SERIALIZABLE_DATA_FILE_LOCATION, serializableAnnotationItems);
+		
 		
 		return true;
 	}
 	
-	private void writeFile(Set<Serializable> annotationItems)
+	private void writeFile(String filename, Set<Serializable> annotationItems)
 	{
 		try
 		{
-			FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", dataFileLocation);
+			FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", filename);
 			try (OutputStream writer = fileObject.openOutputStream();
-					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					GZIPOutputStream gzip = new GZIPOutputStream(writer))
+					ByteArrayOutputStream bos = new ByteArrayOutputStream())
 			{
 				ObjectOutputStream out = null;
 				out = new ObjectOutputStream(bos);
 				out.writeObject(annotationItems);
 				out.flush();
 				byte[] bytes = bos.toByteArray();
-				
-				gzip.write(bytes);
-				gzip.flush();
+				writer.write(bytes);
 			}
 		}
 		catch (Throwable e)

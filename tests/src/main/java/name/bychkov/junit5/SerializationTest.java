@@ -46,7 +46,7 @@ public class SerializationTest extends AbstractTests
 	@TestFactory
 	public Collection<DynamicTest> testSerialization()
 	{
-		Collection<Serializable> annotationClasses = readFile();
+		Collection<Serializable> annotationClasses = readFile(CheckAnnotationProcessor.SERIALIZABLE_DATA_FILE_LOCATION);
 		Collection<DynamicTest> tests = annotationClasses.stream().filter(CheckAnnotationProcessor.CheckSerializableObject.class::isInstance)
 				.map(CheckAnnotationProcessor.CheckSerializableObject.class::cast).map(this::getDynamicTest).collect(Collectors.toList());
 		return tests;

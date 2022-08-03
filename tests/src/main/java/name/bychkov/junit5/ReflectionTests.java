@@ -49,7 +49,7 @@ public class ReflectionTests extends AbstractTests
 	public Collection<DynamicTest> testClassMembers()
 	{
 		Collection<DynamicTest> tests = new ArrayList<>();
-		Collection<Serializable> annotationClasses = readFile();
+		Collection<Serializable> annotationClasses = readFile( CheckAnnotationProcessor.REFLECTIONS_DATA_FILE_LOCATION);
 		
 		for (Serializable item : annotationClasses)
 		{
