@@ -1,7 +1,7 @@
 package name.bychkov.junit5.params;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,9 +15,6 @@ import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 import org.junit.platform.commons.util.AnnotationUtils;
 
-/**
- * @since 5.0
- */
 class ParameterizedTemplateParameterResolver implements ParameterResolver, AfterTestExecutionCallback {
 
 	private static final Namespace NAMESPACE = Namespace.create(ParameterizedTemplateParameterResolver.class);
@@ -33,11 +30,12 @@ class ParameterizedTemplateParameterResolver implements ParameterResolver, After
 	@Override
 	public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
 		Executable declaringExecutable = parameterContext.getDeclaringExecutable();
-		Method testMethod = extensionContext.getTestMethod().orElse(null);
+		Class<?> testClass = extensionContext.getTestClass().orElse(null);
 		int parameterIndex = parameterContext.getIndex();
 
-		// Not a @ParameterizedTest method?
-		if (!declaringExecutable.equals(testMethod)) {
+		// Not a @ParameterizedTemplate class?
+		if (!(declaringExecutable instanceof Constructor) ||
+				!declaringExecutable.getDeclaringClass().equals(testClass)) {
 			return false;
 		}
 
@@ -62,9 +60,6 @@ class ParameterizedTemplateParameterResolver implements ParameterResolver, After
 		return this.classContext.resolve(parameterContext, extractPayloads(this.arguments));
 	}
 
-	/**
-	 * @since 5.8
-	 */
 	@Override
 	public void afterTestExecution(ExtensionContext context) {
 		ParameterizedTemplate parameterizedTemplate = AnnotationUtils.findAnnotation(context.getRequiredTestClass(),
@@ -77,9 +72,9 @@ class ParameterizedTemplateParameterResolver implements ParameterResolver, After
 		AtomicInteger argumentIndex = new AtomicInteger();
 
 		Arrays.stream(this.arguments) //
-				.filter(AutoCloseable.class::isInstance) //
-				.map(AutoCloseable.class::cast) //
-				.map(CloseableArgument::new) //
+				.filter(AutoCloseable.class::isInstance)
+				.map(AutoCloseable.class::cast)
+				.map(CloseableArgument::new)
 				.forEach(closeable -> store.put("closeableArgument#" + argumentIndex.incrementAndGet(), closeable));
 	}
 
@@ -99,13 +94,13 @@ class ParameterizedTemplateParameterResolver implements ParameterResolver, After
 	}
 
 	private Object[] extractPayloads(Object[] arguments) {
-		return Arrays.stream(arguments) //
+		return Arrays.stream(arguments)
 				.map(argument -> {
 					if (argument instanceof Named) {
 						return ((Named<?>) argument).getPayload();
 					}
 					return argument;
-				}) //
+				})
 				.toArray();
 	}
 

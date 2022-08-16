@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
 import org.junit.jupiter.api.extension.TestTemplateInvocationContextProvider;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.support.AnnotationConsumerInitializer;
 import org.junit.platform.commons.JUnitException;
@@ -32,7 +31,7 @@ class ParameterizedTemplateExtension implements TestTemplateInvocationContextPro
 
 	@Override
 	public boolean supportsTestTemplate(ExtensionContext context) {
-		if (!context.getTestMethod().isPresent()) {
+		if (!context.getTestClass().isPresent()) {
 			return false;
 		}
 
@@ -61,7 +60,7 @@ class ParameterizedTemplateExtension implements TestTemplateInvocationContextPro
 
 		Class<?> templateClass = extensionContext.getRequiredTestClass();
 		String displayName = extensionContext.getDisplayName();
-		ParameterizedTemplateClassContext classContext = getStore(extensionContext)//
+		ParameterizedTemplateClassContext classContext = getStore(extensionContext)
 				.get(CLASS_CONTEXT_KEY, ParameterizedTemplateClassContext.class);
 		int argumentMaxLength = extensionContext.getConfigurationParameter(ARGUMENT_MAX_LENGTH_KEY,
 			Integer::parseInt).orElse(512);
@@ -84,7 +83,7 @@ class ParameterizedTemplateExtension implements TestTemplateInvocationContextPro
 				})
 				.onClose(() ->
 						Preconditions.condition(invocationCount.get() > 0,
-								"Configuration error: You must configure at least one set of arguments for this @ParameterizedTest"));
+								"Configuration error: You must configure at least one set of arguments for this @ParameterizedTemplate"));
 		// @formatter:on
 	}
 
@@ -118,11 +117,11 @@ class ParameterizedTemplateExtension implements TestTemplateInvocationContextPro
 		ParameterizedTemplate parameterizedTemplate = findAnnotation(templateClass, ParameterizedTemplate.class).get();
 		String pattern = parameterizedTemplate.name().equals(DEFAULT_DISPLAY_NAME)
 				? extensionContext.getConfigurationParameter(DISPLAY_NAME_PATTERN_KEY).orElse(
-					ParameterizedTest.DEFAULT_DISPLAY_NAME)
+					ParameterizedTemplate.DEFAULT_DISPLAY_NAME)
 				: parameterizedTemplate.name();
 		pattern = Preconditions.notBlank(pattern.trim(),
 			() -> String.format(
-				"Configuration error: @ParameterizedTemplate on method [%s] must be declared with a non-empty name.",
+				"Configuration error: @ParameterizedTemplate on class [%s] must be declared with a non-empty name.",
 				templateClass));
 		return new ParameterizedTemplateNameFormatter(pattern, displayName, classContext, argumentMaxLength);
 	}

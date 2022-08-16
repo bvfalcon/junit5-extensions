@@ -1,10 +1,10 @@
 package name.bychkov.junit5.params;
 
 import static java.util.stream.Collectors.joining;
-import static org.junit.jupiter.params.ParameterizedTest.ARGUMENTS_PLACEHOLDER;
-import static org.junit.jupiter.params.ParameterizedTest.ARGUMENTS_WITH_NAMES_PLACEHOLDER;
-import static org.junit.jupiter.params.ParameterizedTest.DISPLAY_NAME_PLACEHOLDER;
-import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
+import static name.bychkov.junit5.params.ParameterizedTemplate.ARGUMENTS_PLACEHOLDER;
+import static name.bychkov.junit5.params.ParameterizedTemplate.ARGUMENTS_WITH_NAMES_PLACEHOLDER;
+import static name.bychkov.junit5.params.ParameterizedTemplate.DISPLAY_NAME_PLACEHOLDER;
+import static name.bychkov.junit5.params.ParameterizedTemplate.INDEX_PLACEHOLDER;
 
 import java.text.Format;
 import java.text.MessageFormat;
@@ -15,9 +15,6 @@ import org.junit.jupiter.api.Named;
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.StringUtils;
 
-/**
- * @since 5.0
- */
 class ParameterizedTemplateNameFormatter {
 
 	private static final char ELLIPSIS = '\u2026';
@@ -55,14 +52,14 @@ class ParameterizedTemplateNameFormatter {
 	}
 
 	private Object[] extractNamedArguments(Object[] arguments) {
-		return Arrays.stream(arguments) //
+		return Arrays.stream(arguments)
 				.map(argument -> argument instanceof Named ? ((Named<?>) argument).getName() : argument) //
 				.toArray();
 	}
 
 	private String prepareMessageFormatPattern(int invocationIndex, Object[] arguments) {
 		String result = pattern//
-				.replace(DISPLAY_NAME_PLACEHOLDER, this.displayName)//
+				.replace(DISPLAY_NAME_PLACEHOLDER, this.displayName)
 				.replace(INDEX_PLACEHOLDER, String.valueOf(invocationIndex));
 
 		if (result.contains(ARGUMENTS_WITH_NAMES_PLACEHOLDER)) {
@@ -75,15 +72,15 @@ class ParameterizedTemplateNameFormatter {
 
 		return result;
 	}private String argumentsWithNamesPattern(Object[] arguments) {
-		return IntStream.range(0, arguments.length) //
+		return IntStream.range(0, arguments.length)
 				.mapToObj(index -> classContext.getParameterName(index).map(name -> name + "=").orElse("") + "{"
-						+ index + "}") //
+						+ index + "}")
 				.collect(joining(", "));
 	}
 
 	private String argumentsPattern(Object[] arguments) {
-		return IntStream.range(0, arguments.length) //
-				.mapToObj(index -> "{" + index + "}") //
+		return IntStream.range(0, arguments.length)
+				.mapToObj(index -> "{" + index + "}")
 				.collect(joining(", "));
 	}
 
