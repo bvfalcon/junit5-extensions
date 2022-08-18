@@ -111,6 +111,10 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		{
 			for (AnnotationMirror containerAnnotation : element.getAnnotationMirrors())
 			{
+				if (!containerAnnotationClass.getCanonicalName().equals(containerAnnotation.getAnnotationType().toString()))
+				{
+					continue;
+				}
 				for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> containerAnnotationEntry : containerAnnotation.getElementValues().entrySet())
 				{
 					String key = containerAnnotationEntry.getKey().getSimpleName().toString();
@@ -130,6 +134,10 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		{
 			for (AnnotationMirror annotation : element.getAnnotationMirrors())
 			{
+				if (!annotationClass.getCanonicalName().equals(annotation.getAnnotationType().toString()))
+				{
+					continue;
+				}
 				processCheckAnnotation(annotation, element, annotationItems);
 			}
 		}
