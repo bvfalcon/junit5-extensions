@@ -15,14 +15,14 @@ import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 import org.junit.platform.commons.util.AnnotationUtils;
 
-class ParameterizedTemplateParameterResolver implements ParameterResolver, AfterTestExecutionCallback {
+class ParameterizedConstructorParameterResolver implements ParameterResolver, AfterTestExecutionCallback {
 
-	private static final Namespace NAMESPACE = Namespace.create(ParameterizedTemplateParameterResolver.class);
+	private static final Namespace NAMESPACE = Namespace.create(ParameterizedConstructorParameterResolver.class);
 
-	private final ParameterizedTemplateClassContext classContext;
+	private final ParameterizedConstructorClassContext classContext;
 	private final Object[] arguments;
 
-	ParameterizedTemplateParameterResolver(ParameterizedTemplateClassContext classContext, Object[] arguments) {
+	ParameterizedConstructorParameterResolver(ParameterizedConstructorClassContext classContext, Object[] arguments) {
 		this.classContext = classContext;
 		this.arguments = arguments;
 	}
@@ -62,8 +62,8 @@ class ParameterizedTemplateParameterResolver implements ParameterResolver, After
 
 	@Override
 	public void afterTestExecution(ExtensionContext context) {
-		ParameterizedTemplate parameterizedTemplate = AnnotationUtils.findAnnotation(context.getRequiredTestClass(),
-			ParameterizedTemplate.class).get();
+		ParameterizedConstructor parameterizedTemplate = AnnotationUtils.findAnnotation(context.getRequiredTestClass(),
+			ParameterizedConstructor.class).get();
 		if (!parameterizedTemplate.autoCloseArguments()) {
 			return;
 		}

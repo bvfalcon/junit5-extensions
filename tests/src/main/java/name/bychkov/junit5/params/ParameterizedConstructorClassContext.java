@@ -1,7 +1,5 @@
 package name.bychkov.junit5.params;
 
-import static name.bychkov.junit5.params.ParameterizedTemplateClassContext.ResolverType.AGGREGATOR;
-import static name.bychkov.junit5.params.ParameterizedTemplateClassContext.ResolverType.CONVERTER;
 import static org.junit.platform.commons.util.AnnotationUtils.isAnnotated;
 
 import java.lang.reflect.Parameter;
@@ -24,13 +22,13 @@ import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.commons.util.StringUtils;
 
-class ParameterizedTemplateClassContext {
+class ParameterizedConstructorClassContext {
 
 	private final Parameter[] parameters;
 	private final Resolver[] resolvers;
 	private final List<ResolverType> resolverTypes;
 
-	ParameterizedTemplateClassContext(Class<?> testClass) {
+	ParameterizedConstructorClassContext(Class<?> testClass) {
 		this.parameters = testClass.getConstructors()[0].getParameters();
 		this.resolvers = new Resolver[this.parameters.length];
 		this.resolverTypes = new ArrayList<>(this.parameters.length);

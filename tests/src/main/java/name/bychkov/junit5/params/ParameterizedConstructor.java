@@ -6,15 +6,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.junit.jupiter.api.TestTemplate;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-@Target(ElementType.TYPE)
+@Target(ElementType.CONSTRUCTOR)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@TestTemplate
-@ExtendWith(ParameterizedTemplateExtension.class)
-public @interface ParameterizedTemplate {
+public @interface ParameterizedConstructor {
 
 	String DISPLAY_NAME_PLACEHOLDER = "{displayName}";
 
