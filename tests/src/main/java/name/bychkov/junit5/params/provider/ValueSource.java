@@ -8,5 +8,25 @@ import java.lang.annotation.Target;
 @Target(ElementType.CONSTRUCTOR)
 @Retention(RetentionPolicy.RUNTIME)
 @org.junit.jupiter.params.provider.ValueSource
-public @interface ValueSource {
+public @interface ValueSource
+{
+	short[] shorts() default {};
+	
+	byte[] bytes() default {};
+	
+	int[] ints() default {};
+	
+	long[] longs() default {};
+	
+	float[] floats() default {};
+	
+	double[] doubles() default {};
+	
+	char[] chars() default {};
+	
+	boolean[] booleans() default {};
+	
+	String[] strings() default {};
+	
+	Class<?>[] classes() default {};
 }
