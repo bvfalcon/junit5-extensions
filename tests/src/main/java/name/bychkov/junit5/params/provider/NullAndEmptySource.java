@@ -7,6 +7,8 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.CONSTRUCTOR)
 @Retention(RetentionPolicy.RUNTIME)
-@org.junit.jupiter.params.provider.NullAndEmptySource
-public @interface NullAndEmptySource {
+@NullSource
+@EmptySource
+public @interface NullAndEmptySource
+{
 }

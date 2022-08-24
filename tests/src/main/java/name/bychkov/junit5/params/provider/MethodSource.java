@@ -5,8 +5,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.junit.jupiter.params.provider.ArgumentsSource;
+
 @Target(ElementType.CONSTRUCTOR)
 @Retention(RetentionPolicy.RUNTIME)
-@org.junit.jupiter.params.provider.MethodSource
-public @interface MethodSource {
+@ArgumentsSource(MethodArgumentsProvider.class)
+public @interface MethodSource
+{
+	String[] value() default "";
 }

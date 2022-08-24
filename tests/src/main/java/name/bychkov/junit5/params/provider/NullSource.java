@@ -5,8 +5,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.CONSTRUCTOR)
+import org.junit.jupiter.params.provider.ArgumentsSource;
+
+@Target({ ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR })
 @Retention(RetentionPolicy.RUNTIME)
-@org.junit.jupiter.params.provider.NullSource
-public @interface NullSource {
+@ArgumentsSource(NullArgumentsProvider.class)
+public @interface NullSource
+{
 }

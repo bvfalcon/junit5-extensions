@@ -118,7 +118,6 @@ public class ParameterizedConstructorAnnotationProcessor extends AbstractProcess
 		}
 		object.parameters = parameterTypes.toArray(new String[0]);
 		object.annotatedElement = object.targetClass + "." + element.getEnclosingElement().getSimpleName() + ("(" + String.join(", ", object.parameters) + ")");
-		System.out.println(object.annotatedElement);
 		return object;
 	}
 	
