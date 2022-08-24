@@ -25,6 +25,7 @@ import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.ExceptionUtils;
 import org.junit.platform.commons.util.ReflectionUtils;
+import org.opentest4j.IncompleteExecutionException;
 
 import name.bychkov.junit5.AbstractTests;
 import name.bychkov.junit5.params.ParameterizedConstructorAnnotationProcessor.ParameterizedConstructorObject;
@@ -45,25 +46,17 @@ public class ParameterizedConstructorTests extends AbstractTests
 		for (Serializable item : annotationClasses)
 		{
 			ParameterizedConstructorObject obj = (ParameterizedConstructorObject) item;
-			Class<?> targetClass = null;
-			targetClass = ReflectionUtils.tryToLoadClass(obj.targetClass).getOrThrow(
+			Class<?> targetClass = ReflectionUtils.tryToLoadClass(obj.targetClass).getOrThrow(
 					cause -> new JUnitException(format("Could not load class [%s]", obj.targetClass), cause));
-			Class<?>[] params = new Class<?>[obj.parameters.length];
-			for (int i = 0; i < obj.parameters.length; i++)
-			{
-				String parameter = obj.parameters[i];
-				Class<?> parameterClass = ReflectionUtils.tryToLoadClass(parameter).getOrThrow(
-						cause -> new JUnitException(format("Could not load class [%s]", parameter), cause));
-				params[i] = parameterClass;
-			}
+			Class<?>[] params = resolveParameterTypes(obj.parameters);
+			
+			List<Method> testMethods = getTestMethods(targetClass);
+			List<Method> beforeEachMethods = ReflectionUtils.findMethods(targetClass,
+					method -> method.isAnnotationPresent(org.junit.jupiter.api.BeforeEach.class));
+			List<Method> afterEachMethods = ReflectionUtils.findMethods(targetClass,
+					method -> method.isAnnotationPresent(org.junit.jupiter.api.AfterEach.class));
 			try
 			{
-				List<Method> testMethods = getTestMethods(targetClass);
-				List<Method> beforeEachMethods = ReflectionUtils.findMethods(targetClass,
-						method -> method.isAnnotationPresent(org.junit.jupiter.api.BeforeEach.class));
-				List<Method> afterEachMethods = ReflectionUtils.findMethods(targetClass,
-						method -> method.isAnnotationPresent(org.junit.jupiter.api.AfterEach.class));
-				
 				Constructor<?> constructor = targetClass.getDeclaredConstructor(params);
 				List<Arguments> arguments = getArguments(constructor);
 				
@@ -74,9 +67,8 @@ public class ParameterizedConstructorTests extends AbstractTests
 					List<DynamicTest> tests = new ArrayList<>(testMethods.size());
 					for (Method testMethod : testMethods)
 					{
-						Object instance = ReflectionUtils.newInstance(subtypeConstructor, argumentsItem.get());
 						DynamicTest test = DynamicTest.dynamicTest(testMethod.getName(),
-								getExecutable(instance, testMethod, beforeEachMethods, afterEachMethods));
+								getExecutable(subtypeConstructor, argumentsItem, testMethod, beforeEachMethods, afterEachMethods));
 						tests.add(test);
 					}
 					DynamicContainer testContainer = DynamicContainer.dynamicContainer(obj.targetClass + "[" + i + "] ", tests);
@@ -91,11 +83,25 @@ public class ParameterizedConstructorTests extends AbstractTests
 		return testContainers;
 	}
 	
-	private org.junit.jupiter.api.function.Executable getExecutable(Object testClassInstance, Method testMethod,
+	private Class<?>[] resolveParameterTypes(String[] parameterClassNames)
+	{
+		Class<?>[] result = new Class<?>[parameterClassNames.length];
+		for (int i = 0; i < parameterClassNames.length; i++)
+		{
+			String parameter = parameterClassNames[i];
+			Class<?> parameterClass = ReflectionUtils.tryToLoadClass(parameter).getOrThrow(
+					cause -> new JUnitException(format("Could not load class [%s]", parameter), cause));
+			result[i] = parameterClass;
+		}
+		return result;
+	}
+	
+	private org.junit.jupiter.api.function.Executable getExecutable(Constructor<?> constructor, Arguments arguments, Method testMethod,
 			List<Method> beforeEachMethods, List<Method> afterEachMethods)
 	{
 		return () ->
 		{
+			Object testClassInstance = ReflectionUtils.newInstance(constructor, arguments.get());
 			try
 			{
 				for (Method beforeEachMethod : beforeEachMethods)
@@ -103,6 +109,16 @@ public class ParameterizedConstructorTests extends AbstractTests
 					ReflectionUtils.invokeMethod(beforeEachMethod, testClassInstance);
 				}
 				ReflectionUtils.invokeMethod(testMethod, testClassInstance);
+			}
+			catch (AssertionError e)
+			{
+				e.printStackTrace(System.err);
+				throw e;
+			}
+			catch (Throwable e)
+			{
+				e.printStackTrace(System.out);
+				throw e;
 			}
 			finally
 			{
