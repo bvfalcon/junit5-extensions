@@ -4,7 +4,6 @@ import static java.lang.String.format;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,70 +40,98 @@ public class ParameterizedConstructorTests extends AbstractTests
 	@TestFactory
 	public Collection<DynamicContainer> tests()
 	{
-		Collection<DynamicContainer> tests = new ArrayList<>();
+		Collection<DynamicContainer> testContainers = new ArrayList<>();
 		Collection<Serializable> annotationClasses = readFile(ParameterizedConstructorAnnotationProcessor.DATA_FILE_LOCATION);
-		CLASS: for (Serializable item : annotationClasses)
+		for (Serializable item : annotationClasses)
 		{
 			ParameterizedConstructorObject obj = (ParameterizedConstructorObject) item;
 			Class<?> targetClass = null;
 			targetClass = ReflectionUtils.tryToLoadClass(obj.targetClass).getOrThrow(
 					cause -> new JUnitException(format("Could not load class [%s]", obj.targetClass), cause));
-			List<Class<?>> params = new ArrayList<>(obj.parameters.length);
-			for (String parameter : obj.parameters)
+			Class<?>[] params = new Class<?>[obj.parameters.length];
+			for (int i = 0; i < obj.parameters.length; i++)
 			{
+				String parameter = obj.parameters[i];
 				Class<?> parameterClass = ReflectionUtils.tryToLoadClass(parameter).getOrThrow(
 						cause -> new JUnitException(format("Could not load class [%s]", parameter), cause));
-				params.add(parameterClass);
+				params[i] = parameterClass;
 			}
 			try
 			{
-				Constructor<?> constructor = targetClass.getDeclaredConstructor(params.toArray(new Class[0]));
-				ExtensionContext extensionContext = new ParameterizedConstructorExecutionContext(constructor);
-				List<ArgumentsSource> argumentSources = findSourceAnnotations(targetClass, params.toArray(new Class[0]));
-				List<Arguments> arguments = argumentSources.stream().map(ArgumentsSource::value).map(this::instantiateArgumentsProvider)
-						.map(provider -> AnnotationConsumerInitializer.initialize(constructor, provider))
-						.flatMap(provider -> arguments(provider, extensionContext))
-						.collect(Collectors.toList());
+				List<Method> testMethods = getTestMethods(targetClass);
+				List<Method> beforeEachMethods = ReflectionUtils.findMethods(targetClass,
+						method -> method.isAnnotationPresent(org.junit.jupiter.api.BeforeEach.class));
+				List<Method> afterEachMethods = ReflectionUtils.findMethods(targetClass,
+						method -> method.isAnnotationPresent(org.junit.jupiter.api.AfterEach.class));
 				
-				List<Method> methods = getTestMethods(targetClass);
+				Constructor<?> constructor = targetClass.getDeclaredConstructor(params);
+				List<Arguments> arguments = getArguments(constructor);
+				
+				Constructor<?> subtypeConstructor = generateSubtype(targetClass, params);
 				for (int i = 0; i < arguments.size(); i++)
 				{
 					Arguments argumentsItem = arguments.get(i);
-					Object instance = getInstance(targetClass, params.toArray(new Class[0]), argumentsItem);
-					List<DynamicTest> testMethods = new ArrayList<>(methods.size());
-					for (Method method : methods)
+					List<DynamicTest> tests = new ArrayList<>(testMethods.size());
+					for (Method testMethod : testMethods)
 					{
-						DynamicTest testMethod = DynamicTest.dynamicTest(method.getName(), () -> ReflectionUtils.invokeMethod(method, instance));
-						testMethods.add(testMethod);
+						Object instance = ReflectionUtils.newInstance(subtypeConstructor, argumentsItem.get());
+						DynamicTest test = DynamicTest.dynamicTest(testMethod.getName(),
+								getExecutable(instance, testMethod, beforeEachMethods, afterEachMethods));
+						tests.add(test);
 					}
-					DynamicContainer testContainer = DynamicContainer.dynamicContainer(obj.targetClass + "[" + i + "] ", testMethods);
-					tests.add(testContainer);
+					DynamicContainer testContainer = DynamicContainer.dynamicContainer(obj.targetClass + "[" + i + "] ", tests);
+					testContainers.add(testContainer);
 				}
 			}
 			catch (NoSuchMethodException | SecurityException e)
 			{
 				LOG.warn(e, () -> "Cannot find constructor " + obj.annotatedElement);
-				continue CLASS;
-			}
-			catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-			{
-				LOG.warn(e, () -> "Cannot instantiate " + obj.annotatedElement);
-				continue CLASS;
 			}
 		}
-		return tests;
+		return testContainers;
 	}
 	
-	private Object getInstance(Class<?> klass, Class<?>[] params, Arguments arguments) throws InstantiationException, IllegalAccessException,
-			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException
+	private org.junit.jupiter.api.function.Executable getExecutable(Object testClassInstance, Method testMethod,
+			List<Method> beforeEachMethods, List<Method> afterEachMethods)
+	{
+		return () ->
+		{
+			try
+			{
+				for (Method beforeEachMethod : beforeEachMethods)
+				{
+					ReflectionUtils.invokeMethod(beforeEachMethod, testClassInstance);
+				}
+				ReflectionUtils.invokeMethod(testMethod, testClassInstance);
+			}
+			finally
+			{
+				for (Method afterEachMethod : afterEachMethods)
+				{
+					ReflectionUtils.invokeMethod(afterEachMethod, testClassInstance);
+				}
+			}
+		};
+	}
+	
+	private List<Arguments> getArguments(Constructor<?> constructor)
+	{
+		ExtensionContext extensionContext = new ParameterizedConstructorExecutionContext(constructor);
+		List<ArgumentsSource> argumentSources = AnnotationUtils.findRepeatableAnnotations(constructor, ArgumentsSource.class);
+		List<Arguments> arguments = argumentSources.stream().map(ArgumentsSource::value).map(this::instantiateArgumentsProvider)
+				.map(provider -> AnnotationConsumerInitializer.initialize(constructor, provider))
+				.flatMap(provider -> arguments(provider, extensionContext))
+				.collect(Collectors.toList());
+		return arguments;
+	}
+	
+	private Constructor<?> generateSubtype(Class<?> klass, Class<?>[] params) throws NoSuchMethodException, SecurityException
 	{
 		Class<?> constructedClass = new ByteBuddy().subclass(klass, ConstructorStrategy.Default.NO_CONSTRUCTORS)
 				.defineConstructor(Visibility.PUBLIC).withParameters(params)
 				.intercept(MethodCall.invoke(klass.getConstructor(params)).withAllArguments())
 				.make().load(klass.getClassLoader()).getLoaded();
-		Constructor<?> constructor = constructedClass.getConstructor(params);
-		Object instance = constructor.newInstance(arguments.get()[0]);
-		return instance;
+		return constructedClass.getConstructor(params);
 	}
 	
 	private List<Method> getTestMethods(Class<?> klass)
@@ -113,12 +140,6 @@ public class ParameterizedConstructorTests extends AbstractTests
 				method -> method.isAnnotationPresent(org.junit.jupiter.api.Test.class)
 						&& !method.isAnnotationPresent(org.junit.jupiter.api.Disabled.class));
 		return testMethods;
-	}
-	
-	private List<ArgumentsSource> findSourceAnnotations(Class<?> klass, Class<?>[] params) throws NoSuchMethodException, SecurityException
-	{
-		Constructor<?> constructor = klass.getDeclaredConstructor(params);
-		return AnnotationUtils.findRepeatableAnnotations(constructor, ArgumentsSource.class);
 	}
 	
 	private ArgumentsProvider instantiateArgumentsProvider(Class<? extends ArgumentsProvider> clazz)
