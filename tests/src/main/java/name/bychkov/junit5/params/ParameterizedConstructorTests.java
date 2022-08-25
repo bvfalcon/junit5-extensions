@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -25,7 +26,6 @@ import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.ExceptionUtils;
 import org.junit.platform.commons.util.ReflectionUtils;
-import org.opentest4j.IncompleteExecutionException;
 
 import name.bychkov.junit5.AbstractTests;
 import name.bychkov.junit5.params.ParameterizedConstructorAnnotationProcessor.ParameterizedConstructorObject;
@@ -48,6 +48,10 @@ public class ParameterizedConstructorTests extends AbstractTests
 			ParameterizedConstructorObject obj = (ParameterizedConstructorObject) item;
 			Class<?> targetClass = ReflectionUtils.tryToLoadClass(obj.targetClass).getOrThrow(
 					cause -> new JUnitException(format("Could not load class [%s]", obj.targetClass), cause));
+			if (AnnotationUtils.isAnnotated(targetClass, Disabled.class))
+			{
+				continue;
+			}
 			Class<?>[] params = resolveParameterTypes(obj.parameters);
 			
 			List<Method> testMethods = getTestMethods(targetClass);

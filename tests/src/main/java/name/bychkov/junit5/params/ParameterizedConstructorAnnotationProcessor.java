@@ -58,15 +58,8 @@ public class ParameterizedConstructorAnnotationProcessor extends AbstractProcess
 	
 	private void processAnnotation(AnnotationMirror annotation, Element element, Collection<Serializable> annotationItems)
 	{
-		Serializable object = null;
-		if (ParameterizedConstructor.class.getCanonicalName().equals(annotation.getAnnotationType().toString()))
-		{
-			object = join(annotation, element);
-		}
-		if (object != null)
-		{
-			annotationItems.add(object);
-		}
+		Serializable object = join(annotation, element);
+		annotationItems.add(object);
 	}
 	
 	static class ParameterizedConstructorObject implements Serializable

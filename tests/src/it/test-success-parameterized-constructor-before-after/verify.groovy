@@ -1,0 +1,5 @@
+File buildLog = new File( basedir, 'build.log' )
+assert buildLog.text.contains( '@Test executed. constructorParameter value: test-value-483' )
+assert buildLog.text.contains( '@Test executed. constructorParameter value: test-value-295' )
+assert 2 == buildLog.text.count( '@BeforeEach callback success' )
+assert 2 == buildLog.text.count( '@AfterEach callback success' )
