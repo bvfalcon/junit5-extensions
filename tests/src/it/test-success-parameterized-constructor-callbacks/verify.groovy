@@ -3,3 +3,5 @@ assert buildLog.text.contains( '@Test executed. constructorParameter value: test
 assert buildLog.text.contains( '@Test executed. constructorParameter value: test-value-295' )
 assert 2 == buildLog.text.count( '@BeforeEach callback success' )
 assert 2 == buildLog.text.count( '@AfterEach callback success' )
+assert 1 == buildLog.text.count( '@BeforeAll callback success' )
+assert 1 == buildLog.text.count( '@AfterAll callback success' )
