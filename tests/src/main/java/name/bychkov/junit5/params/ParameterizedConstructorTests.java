@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -124,6 +125,10 @@ public class ParameterizedConstructorTests extends AbstractTests
 			this.counter = new AtomicInteger(testCount);
 		}
 		
+		Constructor<T> constructor;
+		Arguments arguments;
+		private T instance;
+		
 		public T getInstance(Constructor<T> constructor, Arguments arguments)
 		{
 			synchronized (this)
@@ -143,8 +148,16 @@ public class ParameterizedConstructorTests extends AbstractTests
 			}
 			else
 			{
-				T testClassInstance = ReflectionUtils.newInstance(constructor, arguments.get());
-				return testClassInstance;
+				synchronized (this)
+				{
+					if (!Objects.equals(this.constructor, constructor) || !Objects.equals(this.arguments, arguments))
+					{
+						this.constructor = constructor;
+						this.arguments = arguments;
+						this.instance = ReflectionUtils.newInstance(constructor, arguments.get());
+					}
+					return instance;
+				}
 			}
 		}
 		
