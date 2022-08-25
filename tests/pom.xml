@@ -69,6 +69,7 @@
 						</goals>
 						<configuration>
 							<cloneProjectsTo>${project.build.directory}/it-special-cases</cloneProjectsTo>
+							<postBuildHookScript>verify</postBuildHookScript>
 						</configuration>
 					</execution>
 				</executions>
