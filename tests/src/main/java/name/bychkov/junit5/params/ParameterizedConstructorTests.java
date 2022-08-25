@@ -225,11 +225,17 @@ public class ParameterizedConstructorTests extends AbstractTests
 			}
 			finally
 			{
-				for (Method method : afterEachMethods)
+				try
 				{
-					ReflectionUtils.invokeMethod(method, testClassInstance);
+					for (Method method : afterEachMethods)
+					{
+						ReflectionUtils.invokeMethod(method, testClassInstance);
+					}
 				}
-				instanceProducer.endProcessing();
+				finally
+				{
+					instanceProducer.endProcessing();
+				}
 			}
 		};
 	}
