@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +12,6 @@ import name.bychkov.junit5.params.ParameterizedConstructor;
 import name.bychkov.junit5.params.provider.EmptySource;
 import name.bychkov.junit5.params.provider.EnumSource;
 import name.bychkov.junit5.params.provider.MethodSource;
-import name.bychkov.junit5.params.provider.NullAndEmptySource;
 import name.bychkov.junit5.params.provider.NullSource;
 import name.bychkov.junit5.params.provider.ValueSource;
 
@@ -25,7 +23,6 @@ public abstract class TemplateTest
 	@ValueSource(strings = { "test-value-1", "test-value-2" })
 	//@NullSource
 	//@EmptySource
-	//@NullAndEmptySource
 	@MethodSource(value = { "testData", "name.bychkov.junit5.TemplateTest#testData2()" })
 	public TemplateTest(String constructorParameter)
 	{

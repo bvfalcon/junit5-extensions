@@ -1,4 +1,4 @@
-package name.bychkov.junit5.params.provider;
+package name.bychkov.junit5.params;
 
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -12,12 +12,17 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.platform.commons.PreconditionViolationException;
 import org.junit.platform.commons.util.Preconditions;
 
-class EmptyArgumentsProvider implements ArgumentsProvider {
+import name.bychkov.junit5.params.ParameterizedConstructorAnnotationProcessor.ParameterizedConstructorObject;
 
+class EmptyArgumentsProvider implements ParameterizedConstructorObjectAcceptor {
+
+	@Override
+	public void accept(ParameterizedConstructorObject object) {
+	}
+	
 	@Override
 	public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 		Constructor<?> constructor = (Constructor<?>) context.getElement().get();
@@ -50,5 +55,4 @@ class EmptyArgumentsProvider implements ArgumentsProvider {
 			String.format("@EmptySource cannot provide an empty argument to constructor [%s]: [%s] is not a supported type.",
 					constructor.toGenericString(), parameterType.getName()));
 	}
-
 }

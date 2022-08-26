@@ -1,7 +1,6 @@
 package name.bychkov.junit5.params.provider;
 
 import static java.util.stream.Collectors.toSet;
-import static org.apiguardian.api.API.Status.EXPERIMENTAL;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -12,15 +11,12 @@ import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apiguardian.api.API;
-import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.NullEnum;
 import org.junit.platform.commons.PreconditionViolationException;
 import org.junit.platform.commons.util.Preconditions;
 
 @Target(ElementType.CONSTRUCTOR)
-@Retention(RetentionPolicy.RUNTIME)
-@ArgumentsSource(EnumArgumentsProvider.class)
+@Retention(RetentionPolicy.SOURCE)
 public @interface EnumSource
 {
 	Class<? extends Enum<?>> value() default NullEnum.class;
@@ -39,7 +35,6 @@ public @interface EnumSource
 
 		MATCH_ANY(Mode::validatePatterns, (name, patterns) -> patterns.stream().anyMatch(name::matches)),
 
-		@API(status = EXPERIMENTAL, since = "5.9")
 		MATCH_NONE(Mode::validatePatterns, (name, patterns) -> patterns.stream().noneMatch(name::matches));
 
 		private final Validator validator;
@@ -50,39 +45,38 @@ public @interface EnumSource
 			this.selector = selector;
 		}
 
-		void validate(EnumSource enumSource, Set<? extends Enum<?>> constants, Set<String> names) {
-			Preconditions.notNull(enumSource, "EnumSource must not be null");
+		public void validate(Set<? extends Enum<?>> constants, Set<String> names) {
 			Preconditions.notNull(names, "names must not be null");
 
-			validator.validate(enumSource, constants, names);
+			validator.validate(constants, names);
 		}
 
-		boolean select(Enum<?> constant, Set<String> names) {
+		public boolean select(Enum<?> constant, Set<String> names) {
 			Preconditions.notNull(constant, "Enum constant must not be null");
 			Preconditions.notNull(names, "names must not be null");
 
 			return selector.test(constant.name(), names);
 		}
 
-		private static void validateNames(EnumSource enumSource, Set<? extends Enum<?>> constants, Set<String> names) {
+		private static void validateNames(Set<? extends Enum<?>> constants, Set<String> names) {
 			Set<String> allNames = constants.stream().map(Enum::name).collect(toSet());
 			Preconditions.condition(allNames.containsAll(names),
-				() -> "Invalid enum constant name(s) in " + enumSource + ". Valid names include: " + allNames);
+				() -> "Invalid enum constant name(s) in @EnumSource. Valid names include: " + allNames);
 		}
 
-		private static void validatePatterns(EnumSource enumSource, Set<? extends Enum<?>> constants,
+		private static void validatePatterns(Set<? extends Enum<?>> constants,
 				Set<String> names) {
 			try {
 				names.forEach(Pattern::compile);
 			}
 			catch (PatternSyntaxException e) {
 				throw new PreconditionViolationException(
-					"Pattern compilation failed for a regular expression supplied in " + enumSource, e);
+					"Pattern compilation failed for a regular expression supplied in @EnumSource", e);
 			}
 		}
 
 		private interface Validator {
-			void validate(EnumSource enumSource, Set<? extends Enum<?>> constants, Set<String> names);
+			void validate(Set<? extends Enum<?>> constants, Set<String> names);
 		}
 
 	}

@@ -1,5 +1,6 @@
-package name.bychkov.junit5.params.provider;
+package name.bychkov.junit5.params;
 
+import static java.lang.String.format;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toSet;
 
@@ -10,30 +11,35 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.NullEnum;
-import org.junit.jupiter.params.support.AnnotationConsumer;
+import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.Preconditions;
+import org.junit.platform.commons.util.ReflectionUtils;
 
-class EnumArgumentsProvider implements ArgumentsProvider, AnnotationConsumer<EnumSource> {
+import name.bychkov.junit5.params.ParameterizedConstructorAnnotationProcessor.ParameterizedConstructorObject;
+import name.bychkov.junit5.params.provider.EnumSource.Mode;
 
-	private EnumSource enumSource;
+class EnumArgumentsProvider implements ParameterizedConstructorObjectAcceptor {
+
+	private String value;
+	private String[] names;
+	private Mode mode;
 
 	@Override
-	public void accept(EnumSource enumSource) {
-		this.enumSource = enumSource;
+	public void accept(ParameterizedConstructorObject object) {
+		this.value = object.enumSourceValue;
+		this.names = object.enumSourceNames;
+		this.mode = object.enumSourceMode != null ? Mode.valueOf(object.enumSourceMode) : Mode.INCLUDE;
 	}
 
 	@Override
 	public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 		Set<? extends Enum<?>> constants = getEnumConstants(context);
-		EnumSource.Mode mode = enumSource.mode();
-		String[] declaredConstantNames = enumSource.names();
+		String[] declaredConstantNames = names;
 		if (declaredConstantNames.length > 0) {
 			Set<String> uniqueNames = stream(declaredConstantNames).collect(toSet());
 			Preconditions.condition(uniqueNames.size() == declaredConstantNames.length,
-				() -> "Duplicate enum constant name(s) found in " + enumSource);
-			mode.validate(enumSource, constants, uniqueNames);
+				() -> "Duplicate enum constant name(s) found in @EnumSource");
+			mode.validate(constants, uniqueNames);
 			constants.removeIf(constant -> !mode.select(constant, uniqueNames));
 		}
 		return constants.stream().map(Arguments::of);
@@ -46,8 +52,7 @@ class EnumArgumentsProvider implements ArgumentsProvider, AnnotationConsumer<Enu
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <E extends Enum<E>> Class<E> determineEnumClass(ExtensionContext context) {
-		Class enumClass = enumSource.value();
-		if (enumClass.equals(NullEnum.class)) {
+		if (value == null) {
 			Constructor constructor = (Constructor) Preconditions.notNull(context.getElement().orElse(null),
 					"Illegal state: required test constructor is not present in the current ExtensionContext");
 			Class<?>[] parameterTypes = constructor.getParameterTypes();
@@ -56,9 +61,12 @@ class EnumArgumentsProvider implements ArgumentsProvider, AnnotationConsumer<Enu
 			Preconditions.condition(Enum.class.isAssignableFrom(parameterTypes[0]),
 				() -> "First parameter must reference an Enum type (alternatively, use the annotation's 'value' attribute to specify the type explicitly): "
 						+ constructor.toGenericString());
-			enumClass = parameterTypes[0];
+			return (Class<E>) parameterTypes[0];
 		}
-		return enumClass;
+		else {
+			return (Class<E>) ReflectionUtils.tryToLoadClass(value).getOrThrow(
+					cause -> new JUnitException(format("Could not load class [%s]", value), cause));
+		}
 	}
 
 }

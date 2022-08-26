@@ -1,4 +1,4 @@
-package name.bychkov.junit5.params.provider;
+package name.bychkov.junit5.params;
 
 import static java.lang.String.format;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -12,21 +12,22 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.support.AnnotationConsumer;
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.CollectionUtils;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.commons.util.StringUtils;
 
-class MethodArgumentsProvider implements ArgumentsProvider, AnnotationConsumer<MethodSource> {
+import name.bychkov.junit5.params.ParameterizedConstructorAnnotationProcessor.ParameterizedConstructorObject;
+import name.bychkov.junit5.params.provider.MethodSource;
+
+class MethodArgumentsProvider implements ParameterizedConstructorObjectAcceptor {
 
 	private String[] methodNames;
 
 	@Override
-	public void accept(MethodSource annotation) {
-		this.methodNames = annotation.value();
+	public void accept(ParameterizedConstructorObject object) {
+		this.methodNames = object.methodSourceValue;
 	}
 
 	@Override

@@ -26,14 +26,12 @@ import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.junit.jupiter.params.support.AnnotationConsumerInitializer;
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.ExceptionUtils;
+import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.commons.util.ReflectionUtils;
 
 import name.bychkov.junit5.AbstractTests;
@@ -77,7 +75,9 @@ public class ParameterizedConstructorTests extends AbstractTests
 			try
 			{
 				Constructor<?> constructor = targetClass.getDeclaredConstructor(params);
-				List<Arguments> arguments = getArguments(constructor);
+				List<Arguments> arguments = getArguments(constructor, obj);
+				Preconditions.condition(arguments.size() > 0, () -> format("Annotation @%s must be used with one or more annotations @*Source",
+						ParameterizedConstructor.class.getSimpleName()));
 				
 				InstanceProducer<?> instanceProducer = new InstanceProducer<>(lifecycle,
 						beforeAllMethods, afterAllMethods, arguments.size() * testMethods.size());
@@ -240,17 +240,6 @@ public class ParameterizedConstructorTests extends AbstractTests
 		};
 	}
 	
-	private List<Arguments> getArguments(Constructor<?> constructor)
-	{
-		ExtensionContext extensionContext = new ParameterizedConstructorExecutionContext(constructor);
-		List<ArgumentsSource> argumentSources = AnnotationUtils.findRepeatableAnnotations(constructor, ArgumentsSource.class);
-		List<Arguments> arguments = argumentSources.stream().map(ArgumentsSource::value).map(this::instantiateArgumentsProvider)
-				.map(provider -> AnnotationConsumerInitializer.initialize(constructor, provider))
-				.flatMap(provider -> arguments(provider, extensionContext))
-				.collect(Collectors.toList());
-		return arguments;
-	}
-	
 	private Constructor<?> generateSubtype(Class<?> klass, Class<?>[] params) throws NoSuchMethodException, SecurityException
 	{
 		Class<?> constructedClass = new ByteBuddy().subclass(klass, ConstructorStrategy.Default.NO_CONSTRUCTORS)
@@ -268,30 +257,43 @@ public class ParameterizedConstructorTests extends AbstractTests
 		return testMethods;
 	}
 	
-	private ArgumentsProvider instantiateArgumentsProvider(Class<? extends ArgumentsProvider> clazz)
+	private List<Arguments> getArguments(Constructor<?> constructor, ParameterizedConstructorObject object)
 	{
-		try
+		ExtensionContext extensionContext = new ParameterizedConstructorExecutionContext(constructor);
+		List<ParameterizedConstructorObjectAcceptor> argumentSources = new ArrayList<>();
+		if (object.hasEmptySource)
 		{
-			return ReflectionUtils.newInstance(clazz);
+			argumentSources.add(new EmptyArgumentsProvider());
 		}
-		catch (Exception ex)
+		if (object.hasNullSource)
 		{
-			if (ex instanceof NoSuchMethodException)
-			{
-				String message = String.format("Failed to find a no-argument constructor for ArgumentsProvider [%s]. "
-						+ "Please ensure that a no-argument constructor exists and "
-						+ "that the class is either a top-level class or a static nested class",
-						clazz.getName());
-				throw new JUnitException(message, ex);
-			}
-			throw ex;
+			argumentSources.add(new NullArgumentsProvider());
 		}
+		if (object.hasEnumSource)
+		{
+			argumentSources.add(new EnumArgumentsProvider());
+		}
+		if (object.hasValueSource)
+		{
+			argumentSources.add(new ValueArgumentsProvider());
+		}
+		if (object.hasMethodSource)
+		{
+			argumentSources.add(new MethodArgumentsProvider());
+		}
+		
+		List<Arguments> arguments = argumentSources.stream()
+				.flatMap(provider -> arguments(provider, object, extensionContext))
+				.collect(Collectors.toList());
+		return arguments;
 	}
 	
-	protected static Stream<? extends Arguments> arguments(ArgumentsProvider provider, ExtensionContext context)
+	protected static Stream<? extends Arguments> arguments(ParameterizedConstructorObjectAcceptor provider,
+			ParameterizedConstructorObject object, ExtensionContext context)
 	{
 		try
 		{
+			provider.accept(object);
 			return provider.provideArguments(context);
 		}
 		catch (Exception e)
