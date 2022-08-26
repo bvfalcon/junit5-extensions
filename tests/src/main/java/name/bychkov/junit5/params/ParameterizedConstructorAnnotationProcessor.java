@@ -168,7 +168,7 @@ public class ParameterizedConstructorAnnotationProcessor extends AbstractProcess
 		List<String> parameterTypes = new ArrayList<>(parameters.size());
 		for (com.sun.tools.javac.code.Symbol.VarSymbol parameter : parameters)
 		{
-			String type = parameter.asType().toString();
+			String type = ((com.sun.tools.javac.code.Type) parameter.asType()).tsym.toString();
 			parameterTypes.add(type);
 		}
 		object.parameters = parameterTypes.toArray(new String[0]);

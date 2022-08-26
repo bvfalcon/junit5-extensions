@@ -1,5 +1,6 @@
 package name.bychkov.junit5;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -27,6 +28,69 @@ public abstract class TemplateTest
 	public TemplateTest(String constructorParameter)
 	{
 		this.constructorParameter = constructorParameter;
+	}
+	
+	@ParameterizedConstructor
+	@ValueSource(ints = { 475, 267 })
+	public TemplateTest(int constructorParameter)
+	{
+		this.constructorParameter = Integer.toString(constructorParameter);
+	}
+	
+	@ParameterizedConstructor
+	@ValueSource(shorts = { (short) 157, (short) 349 })
+	public TemplateTest(short constructorParameter)
+	{
+		this.constructorParameter = Short.toString(constructorParameter);
+	}
+	
+	@ParameterizedConstructor
+	@ValueSource(bytes = { (byte) 84, (byte) 4 })
+	public TemplateTest(byte constructorParameter)
+	{
+		this.constructorParameter = Byte.toString(constructorParameter);
+	}
+	
+	@ParameterizedConstructor
+	@ValueSource(longs = { 132L, 485L })
+	public TemplateTest(long constructorParameter)
+	{
+		this.constructorParameter = Long.toString(constructorParameter);
+	}
+	
+	@ParameterizedConstructor
+	@ValueSource(floats = { 42.4F, 97.4F })
+	public TemplateTest(float constructorParameter)
+	{
+		this.constructorParameter = Float.toString(constructorParameter);
+	}
+	
+	@ParameterizedConstructor
+	@ValueSource(doubles = { 42.3D, 97.5D })
+	public TemplateTest(double constructorParameter)
+	{
+		this.constructorParameter = Double.toString(constructorParameter);
+	}
+	
+	@ParameterizedConstructor
+	@ValueSource(chars = { 'f', 'p' })
+	public TemplateTest(char constructorParameter)
+	{
+		this.constructorParameter = Character.toString(constructorParameter);
+	}
+	
+	@ParameterizedConstructor
+	@ValueSource(booleans = { true, false })
+	public TemplateTest(boolean constructorParameter)
+	{
+		this.constructorParameter = Boolean.toString(constructorParameter);
+	}
+	
+	@ParameterizedConstructor
+	@ValueSource(classes = { Serializable.class, Number.class })
+	public TemplateTest(Class<?> constructorParameter)
+	{
+		this.constructorParameter = constructorParameter.getSimpleName();
 	}
 	
 	@ParameterizedConstructor
