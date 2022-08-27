@@ -277,11 +277,30 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
 		CheckKeyObject object = new CheckKeyObject();
 		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
-		object.baseName = getAnnotationRequiredAttribute(CheckKey.class, annotationParameters, "baseName");
-		object.value = getAnnotationRequiredAttribute(CheckKey.class, annotationParameters, "value");
+		object.baseName = getAnnotationAttributeOrConstantValue(CheckKey.class, element, annotationParameters, "baseName");
+		object.value = getAnnotationAttributeOrConstantValue(CheckKey.class, element, annotationParameters, "value");
 		object.locale = getAnnotationOptionalAttribute(annotationParameters, "locale");
 		object.annotatedElement = getAnnotatedElement(element, new String[0]);
 		return object;
+	}
+	
+	private String getAnnotationAttributeOrConstantValue(Class<? extends Annotation> annotationClass,
+			Element element, Map<String, Object> annotationParameters, String attribute)
+	{
+		String constantValue = null;
+		if (element instanceof com.sun.tools.javac.code.Symbol.VarSymbol)
+		{
+			constantValue = Objects.toString(((com.sun.tools.javac.code.Symbol.VarSymbol) element).getConstValue(), null);
+		}
+		if (constantValue != null)
+		{
+			String value = getAnnotationOptionalAttribute(annotationParameters, attribute);
+			return value != null ? value : constantValue;
+		}
+		else
+		{
+			return getAnnotationRequiredAttribute(annotationClass, annotationParameters, attribute);
+		}
 	}
 	
 	static class CheckKeysObject implements Serializable
@@ -325,7 +344,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
 		CheckKeysObject object = new CheckKeysObject();
 		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
-		object.baseName = getAnnotationRequiredAttribute(CheckKeys.class, annotationParameters, "baseName");
+		object.baseName = getAnnotationAttributeOrConstantValue(CheckKeys.class, element, annotationParameters, "baseName");
 		object.values = getAnnotationRequiredArrayAttribute(CheckKeys.class, annotationParameters, "values");
 		object.locale = getAnnotationOptionalAttribute(annotationParameters, "locale");
 		object.annotatedElement = getAnnotatedElement(element, new String[0]);
@@ -415,7 +434,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		Map<String, Object> annotationParameters = readAnnotationParameters(annotation);
 		CheckResourceBundleObject object = new CheckResourceBundleObject();
 		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
-		object.baseName = getAnnotationRequiredAttribute(CheckResourceBundle.class, annotationParameters, "baseName");
+		object.baseName = getAnnotationAttributeOrConstantValue(CheckResourceBundle.class, element, annotationParameters, "baseName");
 		object.locales = getAnnotationRequiredArrayAttribute(CheckResourceBundle.class, annotationParameters, "locales");
 		object.annotatedElement = getAnnotatedElement(element, new String[0]);
 		return object;
@@ -489,7 +508,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		object.message = getAnnotationOptionalAttribute(annotationParameters, "message");
 		object.targetClass = getAnnotationRequiredAttribute(CheckField.class, annotationParameters, "targetClass");
 		object.annotatedElement = getAnnotatedElement(element, new String[0]);
-		object.value = getAnnotationRequiredAttribute(CheckField.class, annotationParameters, "value");
+		object.value = getAnnotationAttributeOrConstantValue(CheckField.class, element, annotationParameters, "value");
 		object.type = getAnnotationOptionalAttribute(annotationParameters, "type");
 		return object;
 	}
@@ -585,7 +604,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 		object.returnType = getAnnotationOptionalAttribute(annotationParameters, "returnType");
 		object.parameters = getAnnotationOptionalArrayAttribute(annotationParameters, "parameters", null);
 		object.annotatedElement = getAnnotatedElement(element, object.parameters);
-		object.value = getAnnotationRequiredAttribute(CheckMethod.class, annotationParameters, "value");
+		object.value = getAnnotationAttributeOrConstantValue(CheckMethod.class, element, annotationParameters, "value");
 		return object;
 	}
 	

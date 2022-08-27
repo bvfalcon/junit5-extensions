@@ -30,7 +30,7 @@ public @interface CheckField
 	/**
 	 * Field name
 	 * */
-	String value();
+	String value() default "";
 	
 	/**
 	 * Type of field

@@ -26,12 +26,12 @@ public @interface CheckKey
 	 * base name of resource bundle
 	 * @see java.util.ResourceBundle
 	 * */
-	String baseName();
+	String baseName()  default "";
 	
 	/**
 	 * name of key in resource bundle
 	 * */
-	String value();
+	String value() default "";
 	
 	/**
 	 * Locale name

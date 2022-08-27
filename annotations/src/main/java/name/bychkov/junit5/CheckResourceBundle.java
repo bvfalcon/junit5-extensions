@@ -26,7 +26,7 @@ public @interface CheckResourceBundle
 	 * base name of resource bundle
 	 * @see java.util.ResourceBundle
 	 * */
-	String baseName();
+	String baseName() default "";
 	
 	/**
 	 * Array of locale names to check <br />

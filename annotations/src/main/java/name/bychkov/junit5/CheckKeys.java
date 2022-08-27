@@ -26,7 +26,7 @@ public @interface CheckKeys
 	 * base name of resource bundle
 	 * @see java.util.ResourceBundle
 	 * */
-	String baseName();
+	String baseName() default "";
 	
 	/**
 	 * Array of key names in resource bundle

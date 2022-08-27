@@ -30,7 +30,7 @@ public @interface CheckMethod
 	/**
 	 * Method name
 	 * */
-	String value();
+	String value() default "";
 	
 	/**
 	 * Type of object method returns <br />
