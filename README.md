@@ -62,6 +62,8 @@ Notes:
 
 # Features
 
+**Important common note**: all annotations *are defined with [RetentionPolicy SOURCE](https://docs.oracle.com/javase/8/docs/api/java/lang/annotation/RetentionPolicy.html#SOURCE)* and used in compile-time. After using they are **discarded** by compiler and **absent** in compiled (*.class) code.
+
 ## Safely work with reflections
 
 In current version JUnit5-Extensions supports automatically creation of JUnit5 test for controlling existence/accessability of constructors/fields/methods of Java-classes through Reflection.
