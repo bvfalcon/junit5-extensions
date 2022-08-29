@@ -28,7 +28,10 @@ public @interface CheckMethod
 	Class<?> targetClass();
 	
 	/**
-	 * Method name
+	 * Method name.<br />
+	 * 
+	 * This is required field except when this annotation is applied to constant (static final) field.
+	 * In this special case constant value as value of this annotation field will be used.
 	 * */
 	String value() default "";
 	

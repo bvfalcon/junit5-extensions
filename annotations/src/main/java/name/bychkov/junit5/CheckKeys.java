@@ -23,7 +23,11 @@ import java.lang.annotation.Target;
 public @interface CheckKeys
 {
 	/**
-	 * base name of resource bundle
+	 * base name of resource bundle.<br />
+	 * 
+	 * This is required field except when this annotation is applied to constant (static final) field.
+	 * In this special case constant value as value of this annotation field will be used.
+	 * 
 	 * @see java.util.ResourceBundle
 	 * */
 	String baseName() default "";
