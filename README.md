@@ -29,13 +29,13 @@ Add in your pom.xml these modifications
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-annotations</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>0.4.2</version>
 		<scope>provided</scope>
 	</dependency>
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-tests</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>0.4.2</version>
 		<scope>test</scope>
 	</dependency>
 </dependencies>
