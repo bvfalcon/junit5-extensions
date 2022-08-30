@@ -20,6 +20,13 @@ public abstract class TemplateTest
 		this.constructorParameter = constructorParameter;
 	}
 	
+	@ParameterizedConstructor
+	@ValueSource(ints = { 542, 385 })
+	public TemplateTest(int constructorParameter)
+	{
+		this.constructorParameter = "test-value-" + constructorParameter;
+	}
+	
 	@BeforeAll
 	public static void init()
 	{

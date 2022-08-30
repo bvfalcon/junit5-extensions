@@ -7,7 +7,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,17 +52,28 @@ public class ParameterizedConstructorTests extends AbstractTests
 	{
 		Collection<DynamicContainer> testContainers = new ArrayList<>();
 		Collection<Serializable> annotationClasses = readFile(ParameterizedConstructorAnnotationProcessor.DATA_FILE_LOCATION);
+		
+		Map<String, List<ParameterizedConstructorObject>> annotationClassesGrouppedByTargetClass = new HashMap<>();
 		for (Serializable item : annotationClasses)
 		{
 			ParameterizedConstructorObject obj = (ParameterizedConstructorObject) item;
-			Class<?> targetClass = ReflectionUtils.tryToLoadClass(obj.targetClass).getOrThrow(
-					cause -> new JUnitException(format("Could not load class [%s]", obj.targetClass), cause));
+			String targetClass = obj.targetClass;
+			if (annotationClassesGrouppedByTargetClass.get(targetClass) == null)
+			{
+				annotationClassesGrouppedByTargetClass.put(targetClass, new ArrayList<>());
+			}
+			annotationClassesGrouppedByTargetClass.get(targetClass).add(obj);
+		}
+		
+		for (Map.Entry<String, List<ParameterizedConstructorObject>> entry : annotationClassesGrouppedByTargetClass.entrySet())
+		{
+			Class<?> targetClass = ReflectionUtils.tryToLoadClass(entry.getKey()).getOrThrow(
+					cause -> new JUnitException(format("Could not load class [%s]", entry.getKey()), cause));
 			if (AnnotationUtils.isAnnotated(targetClass, Disabled.class))
 			{
 				continue;
 			}
 			TestInstance.Lifecycle lifecycle = getTestInstanceLifecycle(targetClass);
-			Class<?>[] params = resolveParameterTypes(obj.parameters);
 			
 			List<Method> beforeAllMethods = ReflectionUtils.findMethods(targetClass,
 					method -> AnnotationUtils.isAnnotated(method, BeforeAll.class));
@@ -74,35 +87,39 @@ public class ParameterizedConstructorTests extends AbstractTests
 			
 			try
 			{
-				Constructor<?> constructor = targetClass.getDeclaredConstructor(params);
-				List<Arguments> arguments = getArguments(constructor, obj);
-				Preconditions.condition(arguments.size() > 0, () -> format("Annotation @%s must be used with one or more annotations @*Source",
-						ParameterizedConstructor.class.getSimpleName()));
+				InstanceProducer<?> instanceProducer = new InstanceProducer<>(lifecycle, beforeAllMethods,
+						afterAllMethods, getArguments(targetClass, entry.getValue()).size() * testMethods.size());
 				
-				InstanceProducer<?> instanceProducer = new InstanceProducer<>(lifecycle,
-						beforeAllMethods, afterAllMethods, arguments.size() * testMethods.size());
-				
-				@SuppressWarnings("rawtypes")
-				Constructor subtypeConstructor = generateSubtype(targetClass, params);
-				for (int i = 0; i < arguments.size(); i++)
+				for (ParameterizedConstructorObject obj : entry.getValue())
 				{
-					Arguments argumentsItem = arguments.get(i);
-					List<DynamicTest> tests = new ArrayList<>(testMethods.size());
-					for (Method testMethod : testMethods)
+					Class<?>[] params = resolveParameterTypes(obj.parameters);
+					Constructor<?> constructor = targetClass.getDeclaredConstructor(params);
+					List<Arguments> arguments = getArguments(constructor, obj);
+					Preconditions.condition(arguments.size() > 0, () -> format("Annotation @%s must be used with one or more annotations @*Source",
+							ParameterizedConstructor.class.getSimpleName()));
+					
+					@SuppressWarnings("rawtypes")
+					Constructor subtypeConstructor = generateSubtype(targetClass, params);
+					for (int i = 0; i < arguments.size(); i++)
 					{
-						@SuppressWarnings("unchecked")
-						DynamicTest test = DynamicTest.dynamicTest(testMethod.getName(),
-								getExecutable(instanceProducer, subtypeConstructor, argumentsItem, testMethod,
-										beforeEachMethods, afterEachMethods));
-						tests.add(test);
+						Arguments argumentsItem = arguments.get(i);
+						List<DynamicTest> tests = new ArrayList<>(testMethods.size());
+						for (Method testMethod : testMethods)
+						{
+							@SuppressWarnings("unchecked")
+							DynamicTest test = DynamicTest.dynamicTest(testMethod.getName(),
+									getExecutable(instanceProducer, subtypeConstructor, argumentsItem, testMethod,
+											beforeEachMethods, afterEachMethods));
+							tests.add(test);
+						}
+						DynamicContainer testContainer = DynamicContainer.dynamicContainer(obj.targetClass + "[" + i + "] ", tests);
+						testContainers.add(testContainer);
 					}
-					DynamicContainer testContainer = DynamicContainer.dynamicContainer(obj.targetClass + "[" + i + "] ", tests);
-					testContainers.add(testContainer);
 				}
 			}
 			catch (NoSuchMethodException | SecurityException e)
 			{
-				LOG.warn(e, () -> "Cannot find constructor " + obj.annotatedElement);
+				LOG.warn(e, () -> "Error has acquired while class " + entry.getKey() + " processing");
 			}
 		}
 		return testContainers;
@@ -255,6 +272,19 @@ public class ParameterizedConstructorTests extends AbstractTests
 				method -> AnnotationUtils.isAnnotated(method, Test.class)
 						&& !AnnotationUtils.isAnnotated(method, Disabled.class));
 		return testMethods;
+	}
+	
+	private List<Arguments> getArguments(Class<?> targetClass, List<ParameterizedConstructorObject> objects) throws NoSuchMethodException, SecurityException
+	{
+		List<Arguments> arguments = new ArrayList<>();
+		for (ParameterizedConstructorObject obj : objects)
+		{
+			Class<?>[] params = resolveParameterTypes(obj.parameters);
+			Constructor<?> constructor = targetClass.getDeclaredConstructor(params);
+			List<Arguments> itemArguments = getArguments(constructor, obj);
+			arguments.addAll(itemArguments);
+		}
+		return arguments;
 	}
 	
 	private List<Arguments> getArguments(Constructor<?> constructor, ParameterizedConstructorObject object)
