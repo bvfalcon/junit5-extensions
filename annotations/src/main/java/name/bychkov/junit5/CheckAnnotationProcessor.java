@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -32,6 +34,7 @@ import javax.tools.StandardLocation;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class CheckAnnotationProcessor extends AbstractProcessor
 {
+	private static final Logger LOG = Logger.getLogger(CheckAnnotationProcessor.class.getSimpleName());
 	static final String REFLECTIONS_DATA_FILE_LOCATION = "META-INF/maven/name.bychkov/junit5-extensions/reflections-data.dat";
 	static final String RESOURCE_BUNDLES_DATA_FILE_LOCATION = "META-INF/maven/name.bychkov/junit5-extensions/resource-bundles-data.dat";
 	static final String SERIALIZABLE_DATA_FILE_LOCATION = "META-INF/maven/name.bychkov/junit5-extensions/serializable-data.dat";
@@ -39,44 +42,62 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
 	{
-		Set<Serializable> reflectionsAnnotationItems = new HashSet<>();
+		try
+		{
+			Set<Serializable> reflectionsAnnotationItems = new HashSet<>();
+			
+			// CheckConstructor.List and CheckConstructor
+			processCheckAnnotations(roundEnv, CheckConstructor.List.class, CheckConstructor.class, reflectionsAnnotationItems);
+			
+			// CheckMethod.List and CheckMethod
+			processCheckAnnotations(roundEnv, CheckMethod.List.class, CheckMethod.class, reflectionsAnnotationItems);
+			
+			// CheckField.List and CheckField
+			processCheckAnnotations(roundEnv, CheckField.List.class, CheckField.class, reflectionsAnnotationItems);
+			
+			// CheckFields.List and CheckFields
+			processCheckAnnotations(roundEnv, CheckFields.List.class, CheckFields.class, reflectionsAnnotationItems);
+			
+			writeFile(REFLECTIONS_DATA_FILE_LOCATION, reflectionsAnnotationItems);
+		}
+		catch (Exception e)
+		{
+			LOG.log(Level.SEVERE, e, () -> "Error has acquired while reflections annotations processing");
+		}
 		
-		// CheckConstructor.List and CheckConstructor
-		processCheckAnnotations(roundEnv, CheckConstructor.List.class, CheckConstructor.class, reflectionsAnnotationItems);
+		try
+		{
+			Set<Serializable> resourceBundlesAnnotationItems = new HashSet<>();
+			
+			// CheckKey.List and CheckKey
+			processCheckAnnotations(roundEnv, CheckKey.List.class, CheckKey.class, resourceBundlesAnnotationItems);
+			
+			// CheckKeys.List and CheckKeys
+			processCheckAnnotations(roundEnv, CheckKeys.List.class, CheckKeys.class, resourceBundlesAnnotationItems);
+			
+			// CheckResourceBundle.List and CheckResourceBundle
+			processCheckAnnotations(roundEnv, CheckResourceBundle.List.class, CheckResourceBundle.class, resourceBundlesAnnotationItems);
+			
+			writeFile(RESOURCE_BUNDLES_DATA_FILE_LOCATION, resourceBundlesAnnotationItems);
+		}
+		catch (Exception e)
+		{
+			LOG.log(Level.SEVERE, e, () -> "Error has acquired while resource bundles annotations processing");
+		}
 		
-		// CheckMethod.List and CheckMethod
-		processCheckAnnotations(roundEnv, CheckMethod.List.class, CheckMethod.class, reflectionsAnnotationItems);
-		
-		// CheckField.List and CheckField
-		processCheckAnnotations(roundEnv, CheckField.List.class, CheckField.class, reflectionsAnnotationItems);
-		
-		// CheckFields.List and CheckFields
-		processCheckAnnotations(roundEnv, CheckFields.List.class, CheckFields.class, reflectionsAnnotationItems);
-		
-		writeFile(REFLECTIONS_DATA_FILE_LOCATION, reflectionsAnnotationItems);
-		
-		
-		Set<Serializable> resourceBundlesAnnotationItems = new HashSet<>();
-		
-		// CheckKey.List and CheckKey
-		processCheckAnnotations(roundEnv, CheckKey.List.class, CheckKey.class, resourceBundlesAnnotationItems);
-		
-		// CheckKeys.List and CheckKeys
-		processCheckAnnotations(roundEnv, CheckKeys.List.class, CheckKeys.class, resourceBundlesAnnotationItems);
-		
-		// CheckResourceBundle.List and CheckResourceBundle
-		processCheckAnnotations(roundEnv, CheckResourceBundle.List.class, CheckResourceBundle.class, resourceBundlesAnnotationItems);
-		
-		writeFile(RESOURCE_BUNDLES_DATA_FILE_LOCATION, resourceBundlesAnnotationItems);
-		
-		
-		Set<Serializable> serializableAnnotationItems = new HashSet<>();
-		
-		// CheckSerializable.List and CheckSerializable
-		processCheckAnnotations(roundEnv, CheckSerializable.List.class, CheckSerializable.class, serializableAnnotationItems);
-		
-		writeFile(SERIALIZABLE_DATA_FILE_LOCATION, serializableAnnotationItems);
-		
+		try
+		{
+			Set<Serializable> serializableAnnotationItems = new HashSet<>();
+			
+			// CheckSerializable.List and CheckSerializable
+			processCheckAnnotations(roundEnv, CheckSerializable.List.class, CheckSerializable.class, serializableAnnotationItems);
+			
+			writeFile(SERIALIZABLE_DATA_FILE_LOCATION, serializableAnnotationItems);
+		}
+		catch (Exception e)
+		{
+			LOG.log(Level.SEVERE, e, () -> "Error has acquired while serializable annotation processing");
+		}
 		
 		return true;
 	}
@@ -97,9 +118,9 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 				writer.write(bytes);
 			}
 		}
-		catch (Throwable e)
+		catch (Exception e)
 		{
-			// e.printStackTrace();
+			LOG.log(Level.SEVERE, e, () -> "Error has acquired while File " + filename + " writing");
 		}
 	}
 	
@@ -243,7 +264,7 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 	static class CheckKeyObject implements Serializable
 	{
 		private static final long serialVersionUID = -4466248997083873233L;
-
+		
 		String annotatedElement;
 		String baseName;
 		String value;
@@ -618,9 +639,9 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 			case ENUM_CONSTANT:
 				return element.getEnclosingElement().toString() + "." + element.toString();
 			case CONSTRUCTOR:
-				return element.getEnclosingElement().toString() + "." + 
-					element.getEnclosingElement().getSimpleName() +
-					(parameterClassNames != null ? ("(" + String.join(", ", parameterClassNames) + ")") : "");
+				return element.getEnclosingElement().toString() + "." +
+						element.getEnclosingElement().getSimpleName() +
+						(parameterClassNames != null ? ("(" + String.join(", ", parameterClassNames) + ")") : "");
 			case CLASS:
 			case INTERFACE:
 			case ENUM:
