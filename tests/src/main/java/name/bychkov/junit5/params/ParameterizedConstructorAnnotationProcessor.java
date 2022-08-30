@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -41,16 +43,24 @@ import name.bychkov.junit5.params.provider.ValueSource;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ParameterizedConstructorAnnotationProcessor extends AbstractProcessor
 {
+	private static final Logger LOG = Logger.getLogger(ParameterizedConstructorAnnotationProcessor.class.getSimpleName());
 	static final String DATA_FILE_LOCATION = "META-INF/maven/name.bychkov/junit5-extensions/parameterized-constructor-data.dat";
 	
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
 	{
-		Set<Serializable> annotationItems = new HashSet<>();
-		processAnnotations(roundEnv, ParameterizedConstructor.class,
-				Arrays.asList(EmptySource.class, EnumSource.class, MethodSource.class, NullSource.class, ValueSource.class),
-				annotationItems);
-		writeFile(DATA_FILE_LOCATION, annotationItems);
+		try
+		{
+			Set<Serializable> annotationItems = new HashSet<>();
+			processAnnotations(roundEnv, ParameterizedConstructor.class,
+					Arrays.asList(EmptySource.class, EnumSource.class, MethodSource.class, NullSource.class, ValueSource.class),
+					annotationItems);
+			writeFile(DATA_FILE_LOCATION, annotationItems);
+		}
+		catch (Exception e)
+		{
+			LOG.log(Level.SEVERE, e, () -> "Error has acquired while @ParameterizedConstructor annotation processing");
+		}
 		return true;
 	}
 	
@@ -310,9 +320,9 @@ public class ParameterizedConstructorAnnotationProcessor extends AbstractProcess
 				writer.write(bytes);
 			}
 		}
-		catch (Throwable e)
+		catch (Exception e)
 		{
-			// e.printStackTrace();
+			LOG.log(Level.SEVERE, e, () -> "Error has acquired while File " + filename + " writing");
 		}
 	}
 }
