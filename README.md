@@ -24,8 +24,13 @@ Add in your pom.xml these modifications
 <dependencies>
 	...
 	<!-- other dependencies -->
-	<!-- JUnit 5 dependencies -->
 	...
+	<dependency>
+		<groupId>org.junit.jupiter</groupId>
+		<artifactId>junit-jupiter</artifactId>
+		<version>5.9.0</version>
+		<scope>test</scope>
+	</dependency>
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-annotations</artifactId>
