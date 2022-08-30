@@ -35,6 +35,7 @@ import java.lang.annotation.Target;
  *     private static final String KEY_NAME = "title";
  * 
  *     {@literal @}CheckKey(value="title")
+ *     <font color="red"><del>{@literal @}CheckKey()</del></font>
  *     private static final String RESOURCE_BUNDLE_BASE_NAME = "Messages";
  * 
  * }
