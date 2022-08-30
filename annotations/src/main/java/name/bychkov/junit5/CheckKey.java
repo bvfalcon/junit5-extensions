@@ -12,7 +12,36 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Check existence of specified key in specified resource bundle with default (empty) or specified locale
+ * Check existence of specified key in specified resource bundle with default (empty) or specified locale.<br />
+ * 
+ * <p>This annotation can be used in different ways:
+ * <ul>
+ * <li> basic usage
+ * <li> short form
+ * </ul>
+ * <p>In basic usage scenario fields baseName and value are mandatory. Annotation can be applied to classes, interfaces, constructor, fields and methods. For example:
+ * 
+ * <blockquote><pre>
+ * {@literal @}CheckKey(baseName="Messages", value="title")
+ * public class SomeClass {}
+ * </pre></blockquote>
+ * 
+ * <p>Short form can be used in case of applying annotation to constant (static final) field type of String. In this case value of constant field will be used as value of absent annotations field. For example:
+ * 
+ * <blockquote><pre>
+ * public class SomeClass {
+ * 
+ *     {@literal @}CheckKey(baseName="Messages")
+ *     private static final String KEY_NAME = "title";
+ * 
+ *     {@literal @}CheckKey(value="title")
+ *     <font color="red"><del>{@literal @}CheckKey()</del></font>
+ *     private static final String RESOURCE_BUNDLE_BASE_NAME = "Messages";
+ * 
+ * }
+ * </pre></blockquote>
+ * 
+ * <p>Note, it is not allowed to leave blank both baseName and value.
  * 
  * @author Vladimir V. Bychkov
  * */
@@ -23,15 +52,22 @@ import java.lang.annotation.Target;
 public @interface CheckKey
 {
 	/**
-	 * base name of resource bundle
+	 * base name of resource bundle.<br />
+	 * 
+	 * This is required field except when this annotation is applied to constant (static final) field.
+	 * In this special case constant value as value of this annotation field will be used.
+	 * 
 	 * @see java.util.ResourceBundle
 	 * */
-	String baseName();
+	String baseName()  default "";
 	
 	/**
-	 * name of key in resource bundle
+	 * name of key in resource bundle.<br />
+	 * 
+	 * This is required field except when this annotation is applied to constant (static final) field.
+	 * In this special case constant value as value of this annotation field will be used.
 	 * */
-	String value();
+	String value() default "";
 	
 	/**
 	 * Locale name

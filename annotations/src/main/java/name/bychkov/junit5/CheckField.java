@@ -12,7 +12,31 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Check existence/availability of specified field in targetClass
+ * Check existence/availability of specified field in targetClass.<br />
+ * 
+ * <p>This annotation can be used in different ways:
+ * <ul>
+ * <li> basic usage
+ * <li> short form
+ * </ul>
+ * 
+ * <p>In basic usage scenario fields targetClass and value are mandatory. Annotation can be applied to classes, interfaces, constructor, fields and methods. For example:
+ * 
+ * <blockquote><pre>
+ * {@literal @}CheckField(targetClass=AnyObject.class, value="amount")
+ * public class SomeClass {}
+ * </pre></blockquote>
+ * 
+ * <p>Short form can be used in case of applying annotation to constant (static final) field type of String. In this case value of constant field will be used as value of annotation field. For example:
+ * 
+ * <blockquote><pre>
+ * public class SomeClass {
+ * 
+ *     {@literal @}CheckField(targetClass=AnyObject.class)
+ *     private static final String FIELD_NAME = "amount";
+ * 
+ * }
+ * </pre></blockquote>
  * 
  * @author Vladimir V. Bychkov
  * */
@@ -28,9 +52,12 @@ public @interface CheckField
 	Class<?> targetClass();
 	
 	/**
-	 * Field name
+	 * Field name.<br />
+	 * 
+	 * This is required field except when this annotation is applied to constant (static final) field.
+	 * In this special case constant value as value of this annotation field will be used.
 	 * */
-	String value();
+	String value() default "";
 	
 	/**
 	 * Type of field

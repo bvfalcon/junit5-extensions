@@ -12,7 +12,31 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Check existence of specified keys in specified resource bundle with default (empty) or specified locale
+ * Check existence of specified keys in specified resource bundle with default (empty) or specified locale.<br />
+ * 
+ * <p>This annotation can be used in different ways:
+ * <ul>
+ * <li> basic usage
+ * <li> short form
+ * </ul>
+ * 
+ * <p>In basic usage scenario fields baseName and value are mandatory. Annotation can be applied to classes, interfaces, constructor, fields and methods. For example:
+ * 
+ * <blockquote><pre>
+ * {@literal @}CheckKeys(baseName="Messages", values={"header", "title"})
+ * public class SomeClass {}
+ * </pre></blockquote>
+ * 
+ * <p>Short form can be used in case of applying annotation to constant (static final) field type of String. In this case value of constant field will be used as value of annotations field baseName. For example:
+ * 
+ * <blockquote><pre>
+ * public class SomeClass {
+ * 
+ *     {@literal @}CheckKeys(values={"header", "title"})
+ *     private static final String RESOURCE_BUNDLE_BASE_NAME = "Messages";
+ * 
+ * }
+ * </pre></blockquote>
  * 
  * @author Vladimir V. Bychkov
  * */
@@ -23,10 +47,14 @@ import java.lang.annotation.Target;
 public @interface CheckKeys
 {
 	/**
-	 * base name of resource bundle
+	 * base name of resource bundle.<br />
+	 * 
+	 * This is required field except when this annotation is applied to constant (static final) field.
+	 * In this special case constant value as value of this annotation field will be used.
+	 * 
 	 * @see java.util.ResourceBundle
 	 * */
-	String baseName();
+	String baseName() default "";
 	
 	/**
 	 * Array of key names in resource bundle
