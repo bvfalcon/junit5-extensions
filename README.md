@@ -7,6 +7,7 @@ Useful features for testing with JUnit 5: autogenerating tests for reflections, 
   * [Minimum requirements](#minimum-requirements)
 * [Using in your project](#using-in-your-project)
 * [Features](#features)
+  * [Parameterized constructors](#parameterized-constructors)
   * [Safely work with reflections](#safely-work-with-reflections)
   * [Safely work with resource bundles](#safely-work-with-resource-bundles)
   * [Check classes for Serializable](#check-classes-for-serializable)
@@ -86,6 +87,37 @@ Notes:
 # Features
 
 **Important common note**: all annotations *are defined with [RetentionPolicy SOURCE](https://docs.oracle.com/javase/8/docs/api/java/lang/annotation/RetentionPolicy.html#SOURCE)* and used in compile-time. After using they are **discarded** by compiler and **absent** in compiled (*.class) code.
+
+## Parameterized Constructors
+
+One of the most used feature of JUnit 5 - [parameterized tests](https://junit.org/junit5/docs/5.9.0/user-guide/#writing-tests-parameterized-tests). There are many ways to specify parameters for such test and check with one test many conditions. Powerful thing. But `@ParameterizedTest` and all `@*Source` annotations can be applied only for methods, not for constructors. `@ParameterizedConstructor` and a set of `@*Source` annotations solve this disadvantage. With `@ParameterizedConstructor` you can create test-classes and use it as templates for tests.
+
+Example
+
+```java
+public abstract ServerTest extends org.glassfish.jersey.test.JerseyTest {
+
+	@ParameterizedConstructor
+	@MethodSource(value="testFactories")
+	public ServerTest(TestContainerFactory testContainerFactory) {
+		super(testContainerFactory);
+	}
+	
+	public static Collection<TestContainerFactory> testFactories() {
+		return Arrays.asList(new JacksonJsonTestProvider(), new MoxyJsonTestProvider(), new JettisonMappedJsonTestProvider());
+	}
+	
+	@Test
+	public void test1() {
+		...
+	}
+	
+	@Test
+	public void test2() {
+		...
+	}
+}
+```
 
 ## Safely work with reflections
 
