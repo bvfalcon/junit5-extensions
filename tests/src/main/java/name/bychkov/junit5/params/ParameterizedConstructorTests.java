@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -38,10 +39,6 @@ import org.junit.platform.commons.util.ReflectionUtils;
 
 import name.bychkov.junit5.AbstractTests;
 import name.bychkov.junit5.params.ParameterizedConstructorAnnotationProcessor.ParameterizedConstructorObject;
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.description.modifier.Visibility;
-import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy;
-import net.bytebuddy.implementation.MethodCall;
 
 public class ParameterizedConstructorTests extends AbstractTests
 {
@@ -257,13 +254,12 @@ public class ParameterizedConstructorTests extends AbstractTests
 		};
 	}
 	
-	private Constructor<?> generateSubtype(Class<?> klass, Class<?>[] params) throws NoSuchMethodException, SecurityException
+	private static Random random = new Random();
+	
+	private <T, E extends T> Constructor<E> generateSubtype(Class<T> klass, Class<?>[] params) throws NoSuchMethodException, SecurityException
 	{
-		Class<?> constructedClass = new ByteBuddy().subclass(klass, ConstructorStrategy.Default.NO_CONSTRUCTORS)
-				.defineConstructor(Visibility.PUBLIC).withParameters(params)
-				.intercept(MethodCall.invoke(klass.getConstructor(params)).withAllArguments())
-				.make().load(klass.getClassLoader()).getLoaded();
-		return constructedClass.getConstructor(params);
+		Class<E> subclass = (Class<E>) AsmHelper.createSubClass(klass, Integer.toString(random.nextInt(Integer.MAX_VALUE)), params);
+		return subclass.getConstructor(params);
 	}
 	
 	private List<Method> getTestMethods(Class<?> klass)
