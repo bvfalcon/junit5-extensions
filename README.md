@@ -90,7 +90,7 @@ Notes:
 
 ## Parameterized Constructors
 
-One of the most used feature of JUnit 5 - [parameterized tests](https://junit.org/junit5/docs/5.9.0/user-guide/#writing-tests-parameterized-tests). There are many ways to specify parameters for such test and check with one test many conditions. Powerful thing. But `@ParameterizedTest` and all `@*Source` annotations can be applied only for methods, not for constructors. `@ParameterizedConstructor` and a set of `@*Source` annotations solve this disadvantage. With `@ParameterizedConstructor` you can create test-classes and use it as templates for tests.
+One of the most used feature of JUnit 5 - [parameterized tests](https://junit.org/junit5/docs/5.9.0/user-guide/#writing-tests-parameterized-tests). There are many ways to specify parameters for such test and check with one test many conditions. Powerful thing. But `@ParameterizedTest` and all `@*Source` annotations can be applied only to methods, not to constructors. `@ParameterizedConstructor` and a set of `@*Source` annotations eliminate this inconvenience. With `@ParameterizedConstructor` you can create test-classes and use it as templates for tests.
 
 Example
 
@@ -118,6 +118,15 @@ public abstract ServerTest extends org.glassfish.jersey.test.JerseyTest {
 	}
 }
 ```
+
+During executing this test class will be instantiated for each parameter value and ([default behaviour](https://junit.org/junit5/docs/current/user-guide/#writing-tests-test-instance-lifecycle)) for each test-method. In the example above ServerTest will be instantiated 3 (parameters count) * 2 (test-methods count) = 6 times. But this default behaviour can be changed with `@TestInstance(Lifecycle.PER_CLASS)` applied to class declaration or with engine configuration. In this case ServerTest will be instantiated 3 (parameters count) times.
+
+Notes to usage `@ParameterizedConstructor`:
+
+1) test-class must be defined with `abstract` modifier. Thanks to this test-methods of this class are not considered as usual test-methods. Without default constructor (constructor without parameters) attempt to their execution as usual tests will be ended with error.
+
+2) some annotations (but not all) of usual tests are applicable to tests with parameterized constructor. They are `@Disabled`, `@TestInstance` and methods annotated with `@BeforeAll`, `@BeforeEach`, `@AfterEach` and `@AfterAll`.
+
 
 ## Safely work with reflections
 
