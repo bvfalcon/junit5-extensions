@@ -15,6 +15,9 @@ import org.junit.jupiter.params.provider.NullEnum;
 import org.junit.platform.commons.PreconditionViolationException;
 import org.junit.platform.commons.util.Preconditions;
 
+/**
+ * @see org.junit.jupiter.params.provider.EnumSource
+ * */
 @Target(ElementType.CONSTRUCTOR)
 @Retention(RetentionPolicy.SOURCE)
 public @interface EnumSource

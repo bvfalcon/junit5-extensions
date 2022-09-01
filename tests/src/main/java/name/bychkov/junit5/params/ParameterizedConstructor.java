@@ -6,6 +6,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * {@code @ParameterizedConstructor} is used to signal that the annotated constructor is a
+ * parameterized constructor.
+ * 
+ * @see org.junit.jupiter.params.ParameterizedTest
+ * @see org.junit.jupiter.params.provider.Arguments
+ * @see name.bychkov.junit5.params.provider.ValueSource
+ * @see name.bychkov.junit5.params.provider.MethodSource
+ * @see name.bychkov.junit5.params.provider.EnumSource
+ * @see name.bychkov.junit5.params.provider.EmptySource
+ * @see name.bychkov.junit5.params.provider.NullSource
+ * 
+ * */
 @Target(ElementType.CONSTRUCTOR)
 @Retention(RetentionPolicy.SOURCE)
 @Documented
