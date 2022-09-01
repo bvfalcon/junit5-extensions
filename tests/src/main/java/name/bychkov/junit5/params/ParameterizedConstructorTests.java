@@ -50,18 +50,7 @@ public class ParameterizedConstructorTests extends AbstractTests
 		Collection<DynamicContainer> testContainers = new ArrayList<>();
 		Collection<Serializable> annotationClasses = readFile(ParameterizedConstructorAnnotationProcessor.DATA_FILE_LOCATION);
 		
-		Map<String, List<ParameterizedConstructorObject>> annotationClassesGrouppedByTargetClass = new HashMap<>();
-		for (Serializable item : annotationClasses)
-		{
-			ParameterizedConstructorObject obj = (ParameterizedConstructorObject) item;
-			String targetClass = obj.targetClass;
-			if (annotationClassesGrouppedByTargetClass.get(targetClass) == null)
-			{
-				annotationClassesGrouppedByTargetClass.put(targetClass, new ArrayList<>());
-			}
-			annotationClassesGrouppedByTargetClass.get(targetClass).add(obj);
-		}
-		
+		Map<String, List<ParameterizedConstructorObject>> annotationClassesGrouppedByTargetClass = groupByTargetClass(annotationClasses);
 		for (Map.Entry<String, List<ParameterizedConstructorObject>> entry : annotationClassesGrouppedByTargetClass.entrySet())
 		{
 			Class<?> targetClass = ReflectionUtils.tryToLoadClass(entry.getKey()).getOrThrow(
@@ -86,17 +75,18 @@ public class ParameterizedConstructorTests extends AbstractTests
 			{
 				InstanceProducer<?> instanceProducer = new InstanceProducer<>(lifecycle, beforeAllMethods,
 						afterAllMethods, getArguments(targetClass, entry.getValue()).size() * testMethods.size());
+				SubClassProducer<?> subclassProducer = new SubClassProducer<>(targetClass);
 				
 				for (ParameterizedConstructorObject obj : entry.getValue())
 				{
 					Class<?>[] params = resolveParameterTypes(obj.parameters);
 					Constructor<?> constructor = targetClass.getDeclaredConstructor(params);
 					List<Arguments> arguments = getArguments(constructor, obj);
-					Preconditions.condition(arguments.size() > 0, () -> format("Annotation @%s must be used with one or more annotations @*Source",
+					Preconditions.condition(!arguments.isEmpty(), () -> format("Annotation @%s must be used with one or more annotations @*Source",
 							ParameterizedConstructor.class.getSimpleName()));
 					
 					@SuppressWarnings("rawtypes")
-					Constructor subtypeConstructor = generateSubtype(targetClass, params);
+					Constructor subtypeConstructor = generateSubtype(subclassProducer, params);
 					for (int i = 0; i < arguments.size(); i++)
 					{
 						Arguments argumentsItem = arguments.get(i);
@@ -120,6 +110,17 @@ public class ParameterizedConstructorTests extends AbstractTests
 			}
 		}
 		return testContainers;
+	}
+	
+	private Map<String, List<ParameterizedConstructorObject>> groupByTargetClass(Collection<Serializable> annotationClasses)
+	{
+		Map<String, List<ParameterizedConstructorObject>> result = new HashMap<>();
+		for (Serializable item : annotationClasses)
+		{
+			ParameterizedConstructorObject obj = (ParameterizedConstructorObject) item;
+			result.computeIfAbsent(obj.targetClass, k -> new ArrayList<>()).add(obj);
+		}
+		return result;
 	}
 	
 	static class InstanceProducer<T>
@@ -256,9 +257,9 @@ public class ParameterizedConstructorTests extends AbstractTests
 	
 	private static Random random = new Random();
 	
-	private <T, E extends T> Constructor<E> generateSubtype(Class<T> klass, Class<?>[] params) throws NoSuchMethodException, SecurityException
+	private <T, E extends T> Constructor<E> generateSubtype(SubClassProducer producer, Class<?>[] params) throws NoSuchMethodException, SecurityException
 	{
-		Class<E> subclass = (Class<E>) AsmHelper.createSubClass(klass, Integer.toString(random.nextInt(Integer.MAX_VALUE)), params);
+		Class<E> subclass = (Class<E>) producer.get(Integer.toString(random.nextInt(Integer.MAX_VALUE)), params);
 		return subclass.getConstructor(params);
 	}
 	
