@@ -118,6 +118,10 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 				writer.write(bytes);
 			}
 		}
+		catch (javax.annotation.processing.FilerException e)
+		{
+			LOG.log(Level.FINER, e, () -> "File " + filename + " already exists. Rewriting file is impossible");
+		}
 		catch (Exception e)
 		{
 			LOG.log(Level.SEVERE, e, () -> "Error has acquired while File " + filename + " writing");
@@ -513,8 +517,27 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 	
 	private String getAnnotationRequiredAttribute(Class<? extends Annotation> annotationClass, Map<String, Object> annotationParameters, String attribute)
 	{
-		return Optional.ofNullable(annotationParameters.get(attribute)).map(Object::toString)
+		Object attributeValue = Optional.ofNullable(annotationParameters.get(attribute))
 				.orElseThrow(() -> new RuntimeException(String.format("Annotation @%s must define the attribute %s", annotationClass.getSimpleName(), attribute)));
+		if (attributeValue instanceof com.sun.tools.javac.code.Type.ClassType)
+		{
+			return getType((com.sun.tools.javac.code.Type.ClassType) attributeValue);
+		}
+		else
+		{
+			return attributeValue.toString();
+		}
+	}
+	
+	private String getType(com.sun.tools.javac.code.Type.ClassType klass)
+	{
+		String type = klass.tsym.toString();
+		TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(type);
+		if (typeElement != null)
+		{
+			type = processingEnv.getElementUtils().getBinaryName(typeElement).toString();
+		}
+		return type;
 	}
 	
 	private String getAnnotationOptionalAttribute(Map<String, Object> annotationParameters, String attribute)
