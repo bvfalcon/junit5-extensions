@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -96,6 +97,10 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 				byte[] bytes = bos.toByteArray();
 				writer.write(bytes);
 			}
+		}
+		catch (javax.annotation.processing.FilerException e)
+		{
+			System.out.println("File " + filename + " already exists. Rewriting file is impossible");
 		}
 		catch (Throwable e)
 		{

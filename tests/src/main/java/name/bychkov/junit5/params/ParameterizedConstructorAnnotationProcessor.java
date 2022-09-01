@@ -167,6 +167,17 @@ public class ParameterizedConstructorAnnotationProcessor extends AbstractProcess
 		}
 	}
 	
+	private String getType(com.sun.tools.javac.code.Symbol.VarSymbol parameter)
+	{
+		String type = ((com.sun.tools.javac.code.Type) parameter.asType()).tsym.toString();
+		TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(type);
+		if (typeElement != null)
+		{
+			type = processingEnv.getElementUtils().getBinaryName(typeElement).toString();
+		}
+		return type;
+	}
+	
 	private ParameterizedConstructorObject join(Element element, List<AnnotationMirror> dataSourceAnnotations)
 	{
 		ParameterizedConstructorObject object = new ParameterizedConstructorObject();
@@ -178,7 +189,7 @@ public class ParameterizedConstructorAnnotationProcessor extends AbstractProcess
 		List<String> parameterTypes = new ArrayList<>(parameters.size());
 		for (com.sun.tools.javac.code.Symbol.VarSymbol parameter : parameters)
 		{
-			String type = ((com.sun.tools.javac.code.Type) parameter.asType()).tsym.toString();
+			String type = getType(parameter);
 			parameterTypes.add(type);
 		}
 		object.parameters = parameterTypes.toArray(new String[0]);
@@ -319,6 +330,10 @@ public class ParameterizedConstructorAnnotationProcessor extends AbstractProcess
 				byte[] bytes = bos.toByteArray();
 				writer.write(bytes);
 			}
+		}
+		catch (javax.annotation.processing.FilerException e)
+		{
+			LOG.log(Level.FINER, e, () -> "File " + filename + " already exists. Rewriting file is impossible");
 		}
 		catch (Exception e)
 		{
