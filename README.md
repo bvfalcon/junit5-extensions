@@ -127,6 +127,9 @@ Notes to usage `@ParameterizedConstructor`:
 
 2) some annotations (but not all) of usual tests are applicable to tests with parameterized constructor. They are `@Disabled`, `@TestInstance` and methods annotated with `@BeforeAll`, `@BeforeEach`, `@AfterEach` and `@AfterAll`.
 
+### More samples
+
+You can find yet another example of usage this annotation [here](./examples/parameterized-constructor).
 
 ## Safely work with reflections
 
