@@ -51,7 +51,7 @@ Add in your pom.xml these modifications
 		...
 		<plugin>
 			<artifactId>maven-compiler-plugin</artifactId>
-			<version>3.5.0</version>
+			<version>3.10.1</version>
 			<executions>
 				<execution>
 					<id>default-testCompile</id>
@@ -69,7 +69,7 @@ Add in your pom.xml these modifications
 		</plugin>
 		<plugin>
 			<artifactId>maven-surefire-plugin</artifactId>
-			<version>2.22.0</version>
+			<version>2.22.2</version>
 			<configuration>
 				<dependenciesToScan>
 					<dependency>name.bychkov:junit5-tests</dependency>
