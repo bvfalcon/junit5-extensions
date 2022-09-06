@@ -21,7 +21,7 @@ import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.StringUtils;
 import org.opentest4j.AssertionFailedError;
 
-abstract class AbstractTests
+public abstract class AbstractTests
 {
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractTests.class);
 	

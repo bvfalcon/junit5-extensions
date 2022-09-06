@@ -7,6 +7,7 @@ Useful features for testing with JUnit 5: autogenerating tests for reflections, 
   * [Minimum requirements](#minimum-requirements)
 * [Using in your project](#using-in-your-project)
 * [Features](#features)
+  * [Parameterized constructors](#parameterized-constructors)
   * [Safely work with reflections](#safely-work-with-reflections)
   * [Safely work with resource bundles](#safely-work-with-resource-bundles)
   * [Check classes for Serializable](#check-classes-for-serializable)
@@ -24,8 +25,13 @@ Add in your pom.xml these modifications
 <dependencies>
 	...
 	<!-- other dependencies -->
-	<!-- JUnit 5 dependencies -->
 	...
+	<dependency>
+		<groupId>org.junit.jupiter</groupId>
+		<artifactId>junit-jupiter</artifactId>
+		<version>5.9.0</version>
+		<scope>test</scope>
+	</dependency>
 	<dependency>
 		<groupId>name.bychkov</groupId>
 		<artifactId>junit5-annotations</artifactId>
@@ -44,8 +50,26 @@ Add in your pom.xml these modifications
 	<plugins>
 		...
 		<plugin>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<version>3.10.1</version>
+			<executions>
+				<execution>
+					<id>default-testCompile</id>
+					<configuration>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>name.bychkov</groupId>
+								<artifactId>junit5-tests</artifactId>
+								<version>1.0-SNAPSHOT</version>
+							</path>
+						</annotationProcessorPaths>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
+		<plugin>
 			<artifactId>maven-surefire-plugin</artifactId>
-			<version>2.22.0</version>
+			<version>2.22.2</version>
 			<configuration>
 				<dependenciesToScan>
 					<dependency>name.bychkov:junit5-tests</dependency>
@@ -57,12 +81,52 @@ Add in your pom.xml these modifications
 ```
 
 Notes:
-
-1) maven-surefire-plugin must have version >= 2.22.0
+1) maven-compiler-plugin must have version >= 3.5.0
+2) maven-surefire-plugin must have version >= 2.22.0
 
 # Features
 
 **Important common note**: all annotations *are defined with [RetentionPolicy SOURCE](https://docs.oracle.com/javase/8/docs/api/java/lang/annotation/RetentionPolicy.html#SOURCE)* and used in compile-time. After using they are **discarded** by compiler and **absent** in compiled (*.class) code.
+
+## Parameterized Constructors
+
+One of the most used feature of JUnit 5 - [parameterized tests](https://junit.org/junit5/docs/5.9.0/user-guide/#writing-tests-parameterized-tests). There are many ways to specify parameters for such test and check with one test many conditions. Powerful thing. But `@ParameterizedTest` and all `@*Source` annotations can be applied only to methods, not to constructors. `@ParameterizedConstructor` and a set of `@*Source` annotations eliminate this inconvenience. With `@ParameterizedConstructor` you can create test-classes and use it as templates for tests.
+
+Example
+
+```java
+public abstract ServerTest extends org.glassfish.jersey.test.JerseyTest {
+
+	@ParameterizedConstructor
+	@MethodSource(value="testFactories")
+	public ServerTest(TestContainerFactory testContainerFactory) {
+		super(testContainerFactory);
+	}
+	
+	public static Collection<TestContainerFactory> testFactories() {
+		return Arrays.asList(new JacksonJsonTestProvider(), new MoxyJsonTestProvider(), new JettisonMappedJsonTestProvider());
+	}
+	
+	@Test
+	public void test1() {
+		...
+	}
+	
+	@Test
+	public void test2() {
+		...
+	}
+}
+```
+
+During executing this test class will be instantiated for each parameter value and ([default behaviour](https://junit.org/junit5/docs/current/user-guide/#writing-tests-test-instance-lifecycle)) for each test-method. In the example above ServerTest will be instantiated 3 (parameters count) * 2 (test-methods count) = 6 times. But this default behaviour can be changed with `@TestInstance(Lifecycle.PER_CLASS)` applied to class declaration or with engine configuration. In this case ServerTest will be instantiated 3 (parameters count) times.
+
+Notes to usage `@ParameterizedConstructor`:
+
+1) test-class must be defined with `abstract` modifier. Thanks to this test-methods of this class are not considered as usual test-methods. Without default constructor (constructor without parameters) attempt to their execution as usual tests will be ended with error.
+
+2) some annotations (but not all) of usual tests are applicable to tests with parameterized constructor. They are `@Disabled`, `@TestInstance` and methods annotated with `@BeforeAll`, `@BeforeEach`, `@AfterEach` and `@AfterAll`.
+
 
 ## Safely work with reflections
 

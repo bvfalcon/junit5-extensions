@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>name.bychkov</groupId>
@@ -12,6 +14,10 @@
 	<description>JUnit5 tests of JUnit5-Extensions</description>
 	<url>https://github.com/bvfalcon/junit5-extensions</url>
 
+	<properties>
+		<asm.version>9.3</asm.version>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>name.bychkov</groupId>
@@ -21,9 +27,20 @@
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
+			<artifactId>junit-jupiter</artifactId>
 			<version>5.9.0</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.olivergondza</groupId>
+			<artifactId>maven-jdk-tools-wrapper</artifactId>
+			<version>0.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-tree</artifactId>
+			<version>${asm.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -74,7 +91,88 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>default-compile</id>
+						<configuration>
+							<compilerArgument>-proc:none</compilerArgument>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>shade-asm</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-shade-plugin</artifactId>
+						<version>${maven-shade-plugin.version}</version>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>shade</goal>
+								</goals>
+								<configuration>
+									<shadedArtifactAttached>false</shadedArtifactAttached>
+									<createDependencyReducedPom>true</createDependencyReducedPom>
+									<useDependencyReducedPomInJar>true</useDependencyReducedPomInJar>
+									<promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+									<relocations>
+										<relocation>
+											<pattern>org.objectweb.asm</pattern>
+											<shadedPattern>name.bychkov.junit5.params.asm</shadedPattern>
+										</relocation>
+									</relocations>
+									<filters>
+										<filter>
+											<artifact>name.bychkov:junit5-extensions:*</artifact>
+											<excludes>
+												<exclude>META-INF/MANIFEST.MF</exclude>
+												<exclude>META-INF/maven/**</exclude>
+											</excludes>
+										</filter>
+										<filter>
+											<artifact>org.ow2.asm:*</artifact>
+											<excludes>
+												<exclude>META-INF/MANIFEST.MF</exclude>
+												<exclude>**/module-info.class</exclude>
+												<exclude>**/LICENSE</exclude>
+												<exclude>**/NOTICE</exclude>
+											</excludes>
+										</filter>
+										<filter>
+											<artifact>org.ow2.asm:asm-commons</artifact>
+											<includes>
+												<include>org/objectweb/asm/commons/ClassRemapper.**</include>
+												<include>org/objectweb/asm/commons/MethodRemapper.**</include>
+											</includes>
+										</filter>
+									</filters>
+								</configuration>
+							</execution>
+						</executions>
+						<dependencies>
+							<dependency>
+								<groupId>org.ow2.asm</groupId>
+								<artifactId>asm-tree</artifactId>
+								<version>${asm.version}</version>
+								<scope>compile</scope>
+							</dependency>
+						</dependencies>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
