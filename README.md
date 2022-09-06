@@ -81,8 +81,8 @@ Add in your pom.xml these modifications
 ```
 
 Notes:
-1) maven-compiler-plugin must have version >= 3.5.0
-2) maven-surefire-plugin must have version >= 2.22.0
+1. maven-compiler-plugin must have version >= 3.5.0
+2. maven-surefire-plugin must have version >= 2.22.0
 
 # Features
 
