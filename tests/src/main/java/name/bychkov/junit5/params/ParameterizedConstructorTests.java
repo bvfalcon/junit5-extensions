@@ -73,20 +73,19 @@ public class ParameterizedConstructorTests extends AbstractTests
 			
 			try
 			{
-				InstanceProducer<?> instanceProducer = new InstanceProducer<>(lifecycle, beforeAllMethods,
-						afterAllMethods, getArguments(targetClass, entry.getValue()).size() * testMethods.size());
+				Map<Constructor<?>, List<Arguments>> argumentsMap = getArguments(targetClass, entry.getValue());
+				InstanceProducer<?> instanceProducer = new InstanceProducer<>(lifecycle, beforeAllMethods, afterAllMethods,
+						argumentsMap.values().stream().map(List::size).reduce(0, Integer::sum).intValue() * testMethods.size());
 				SubClassProducer<?> subclassProducer = new SubClassProducer<>(targetClass);
 				
-				for (ParameterizedConstructorObject obj : entry.getValue())
+				for (Constructor<?> constructor : argumentsMap.keySet())
 				{
-					Class<?>[] params = resolveParameterTypes(obj.parameters);
-					Constructor<?> constructor = targetClass.getDeclaredConstructor(params);
-					List<Arguments> arguments = getArguments(constructor, obj);
+					List<Arguments> arguments = argumentsMap.get(constructor);
 					Preconditions.condition(!arguments.isEmpty(), () -> format("Annotation @%s must be used with one or more annotations @*Source",
 							ParameterizedConstructor.class.getSimpleName()));
 					
 					@SuppressWarnings("rawtypes")
-					Constructor subtypeConstructor = generateSubtype(subclassProducer, params);
+					Constructor subtypeConstructor = generateSubtype(subclassProducer, constructor.getParameterTypes());
 					for (int i = 0; i < arguments.size(); i++)
 					{
 						Arguments argumentsItem = arguments.get(i);
@@ -99,7 +98,7 @@ public class ParameterizedConstructorTests extends AbstractTests
 											beforeEachMethods, afterEachMethods));
 							tests.add(test);
 						}
-						DynamicContainer testContainer = DynamicContainer.dynamicContainer(obj.targetClass + "[" + i + "] ", tests);
+						DynamicContainer testContainer = DynamicContainer.dynamicContainer(entry.getKey() + "[" + i + "] ", tests);
 						testContainers.add(testContainer);
 					}
 				}
@@ -271,15 +270,16 @@ public class ParameterizedConstructorTests extends AbstractTests
 		return testMethods;
 	}
 	
-	private List<Arguments> getArguments(Class<?> targetClass, List<ParameterizedConstructorObject> objects) throws NoSuchMethodException, SecurityException
+	private Map<Constructor<?>, List<Arguments>> getArguments(Class<?> targetClass, List<ParameterizedConstructorObject> objects)
+			throws NoSuchMethodException, SecurityException
 	{
-		List<Arguments> arguments = new ArrayList<>();
+		Map<Constructor<?>, List<Arguments>> arguments = new HashMap<>();
 		for (ParameterizedConstructorObject obj : objects)
 		{
 			Class<?>[] params = resolveParameterTypes(obj.parameters);
 			Constructor<?> constructor = targetClass.getDeclaredConstructor(params);
 			List<Arguments> itemArguments = getArguments(constructor, obj);
-			arguments.addAll(itemArguments);
+			arguments.put(constructor, itemArguments);
 		}
 		return arguments;
 	}
