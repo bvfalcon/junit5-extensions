@@ -1,6 +1,7 @@
 package name.bychkov.junit5.params;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -49,19 +50,35 @@ public class ParameterizedConstructorAnnotationProcessor extends AbstractProcess
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
 	{
-		try
+		if (!isAlreadyProcessed(DATA_FILE_LOCATION))
 		{
-			Set<Serializable> annotationItems = new HashSet<>();
-			processAnnotations(roundEnv, ParameterizedConstructor.class,
-					Arrays.asList(EmptySource.class, EnumSource.class, MethodSource.class, NullSource.class, ValueSource.class),
-					annotationItems);
-			writeFile(DATA_FILE_LOCATION, annotationItems);
-		}
-		catch (Exception e)
-		{
-			LOG.log(Level.SEVERE, e, () -> "Error has acquired while @ParameterizedConstructor annotation processing");
+			try
+			{
+				Set<Serializable> annotationItems = new HashSet<>();
+				processAnnotations(roundEnv, ParameterizedConstructor.class,
+						Arrays.asList(EmptySource.class, EnumSource.class, MethodSource.class, NullSource.class, ValueSource.class),
+						annotationItems);
+				writeFile(DATA_FILE_LOCATION, annotationItems);
+			}
+			catch (Exception e)
+			{
+				LOG.log(Level.SEVERE, e, () -> "Error has acquired while @ParameterizedConstructor annotation processing");
+			}
 		}
 		return true;
+	}
+	
+	private boolean isAlreadyProcessed(String filename)
+	{
+		try
+		{
+			FileObject file = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", filename);
+			return file.getLastModified() > 0;
+		}
+		catch (IOException e)
+		{
+			return false;
+		}
 	}
 	
 	private void processAnnotations(RoundEnvironment roundEnv, Class<? extends Annotation> mainAnnotationClass,
@@ -317,6 +334,10 @@ public class ParameterizedConstructorAnnotationProcessor extends AbstractProcess
 	
 	private void writeFile(String filename, Set<Serializable> annotationItems)
 	{
+		if (annotationItems == null || annotationItems.isEmpty())
+		{
+			return;
+		}
 		try
 		{
 			FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", filename);
