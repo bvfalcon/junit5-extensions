@@ -1,6 +1,7 @@
 package name.bychkov.junit5;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -42,68 +43,94 @@ public class CheckAnnotationProcessor extends AbstractProcessor
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
 	{
-		try
+		if (!isAlreadyProcessed(REFLECTIONS_DATA_FILE_LOCATION))
 		{
-			Set<Serializable> reflectionsAnnotationItems = new HashSet<>();
-			
-			// CheckConstructor.List and CheckConstructor
-			processCheckAnnotations(roundEnv, CheckConstructor.List.class, CheckConstructor.class, reflectionsAnnotationItems);
-			
-			// CheckMethod.List and CheckMethod
-			processCheckAnnotations(roundEnv, CheckMethod.List.class, CheckMethod.class, reflectionsAnnotationItems);
-			
-			// CheckField.List and CheckField
-			processCheckAnnotations(roundEnv, CheckField.List.class, CheckField.class, reflectionsAnnotationItems);
-			
-			// CheckFields.List and CheckFields
-			processCheckAnnotations(roundEnv, CheckFields.List.class, CheckFields.class, reflectionsAnnotationItems);
-			
-			writeFile(REFLECTIONS_DATA_FILE_LOCATION, reflectionsAnnotationItems);
-		}
-		catch (Exception e)
-		{
-			LOG.log(Level.SEVERE, e, () -> "Error has acquired while reflections annotations processing");
-		}
-		
-		try
-		{
-			Set<Serializable> resourceBundlesAnnotationItems = new HashSet<>();
-			
-			// CheckKey.List and CheckKey
-			processCheckAnnotations(roundEnv, CheckKey.List.class, CheckKey.class, resourceBundlesAnnotationItems);
-			
-			// CheckKeys.List and CheckKeys
-			processCheckAnnotations(roundEnv, CheckKeys.List.class, CheckKeys.class, resourceBundlesAnnotationItems);
-			
-			// CheckResourceBundle.List and CheckResourceBundle
-			processCheckAnnotations(roundEnv, CheckResourceBundle.List.class, CheckResourceBundle.class, resourceBundlesAnnotationItems);
-			
-			writeFile(RESOURCE_BUNDLES_DATA_FILE_LOCATION, resourceBundlesAnnotationItems);
-		}
-		catch (Exception e)
-		{
-			LOG.log(Level.SEVERE, e, () -> "Error has acquired while resource bundles annotations processing");
+			try
+			{
+				Set<Serializable> reflectionsAnnotationItems = new HashSet<>();
+				
+				// CheckConstructor.List and CheckConstructor
+				processCheckAnnotations(roundEnv, CheckConstructor.List.class, CheckConstructor.class, reflectionsAnnotationItems);
+				
+				// CheckMethod.List and CheckMethod
+				processCheckAnnotations(roundEnv, CheckMethod.List.class, CheckMethod.class, reflectionsAnnotationItems);
+				
+				// CheckField.List and CheckField
+				processCheckAnnotations(roundEnv, CheckField.List.class, CheckField.class, reflectionsAnnotationItems);
+				
+				// CheckFields.List and CheckFields
+				processCheckAnnotations(roundEnv, CheckFields.List.class, CheckFields.class, reflectionsAnnotationItems);
+				
+				writeFile(REFLECTIONS_DATA_FILE_LOCATION, reflectionsAnnotationItems);
+			}
+			catch (Exception e)
+			{
+				LOG.log(Level.SEVERE, e, () -> "Error has acquired while reflections annotations processing");
+			}
 		}
 		
-		try
+		if (!isAlreadyProcessed(RESOURCE_BUNDLES_DATA_FILE_LOCATION))
 		{
-			Set<Serializable> serializableAnnotationItems = new HashSet<>();
-			
-			// CheckSerializable.List and CheckSerializable
-			processCheckAnnotations(roundEnv, CheckSerializable.List.class, CheckSerializable.class, serializableAnnotationItems);
-			
-			writeFile(SERIALIZABLE_DATA_FILE_LOCATION, serializableAnnotationItems);
+			try
+			{
+				Set<Serializable> resourceBundlesAnnotationItems = new HashSet<>();
+				
+				// CheckKey.List and CheckKey
+				processCheckAnnotations(roundEnv, CheckKey.List.class, CheckKey.class, resourceBundlesAnnotationItems);
+				
+				// CheckKeys.List and CheckKeys
+				processCheckAnnotations(roundEnv, CheckKeys.List.class, CheckKeys.class, resourceBundlesAnnotationItems);
+				
+				// CheckResourceBundle.List and CheckResourceBundle
+				processCheckAnnotations(roundEnv, CheckResourceBundle.List.class, CheckResourceBundle.class, resourceBundlesAnnotationItems);
+				
+				writeFile(RESOURCE_BUNDLES_DATA_FILE_LOCATION, resourceBundlesAnnotationItems);
+			}
+			catch (Exception e)
+			{
+				LOG.log(Level.SEVERE, e, () -> "Error has acquired while resource bundles annotations processing");
+			}
 		}
-		catch (Exception e)
+		
+		if (!isAlreadyProcessed(SERIALIZABLE_DATA_FILE_LOCATION))
 		{
-			LOG.log(Level.SEVERE, e, () -> "Error has acquired while serializable annotation processing");
+			try
+			{
+				Set<Serializable> serializableAnnotationItems = new HashSet<>();
+				
+				// CheckSerializable.List and CheckSerializable
+				processCheckAnnotations(roundEnv, CheckSerializable.List.class, CheckSerializable.class, serializableAnnotationItems);
+				
+				writeFile(SERIALIZABLE_DATA_FILE_LOCATION, serializableAnnotationItems);
+			}
+			catch (Exception e)
+			{
+				LOG.log(Level.SEVERE, e, () -> "Error has acquired while serializable annotation processing");
+			}
 		}
 		
 		return true;
 	}
 	
+	private boolean isAlreadyProcessed(String filename)
+	{
+		try
+		{
+			FileObject file = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", filename);
+			return file.getLastModified() > 0;
+		}
+		catch (IOException e)
+		{
+			return false;
+		}
+	}
+	
 	private void writeFile(String filename, Set<Serializable> annotationItems)
 	{
+		if (annotationItems == null || annotationItems.isEmpty())
+		{
+			return;
+		}
 		try
 		{
 			FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", filename);
