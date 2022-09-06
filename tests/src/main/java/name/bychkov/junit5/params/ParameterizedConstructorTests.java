@@ -2,6 +2,7 @@ package name.bychkov.junit5.params;
 
 import static java.lang.String.format;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -11,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -45,7 +45,7 @@ public class ParameterizedConstructorTests extends AbstractTests
 	private static final Logger LOG = LoggerFactory.getLogger(ParameterizedConstructorTests.class);
 	
 	@TestFactory
-	public Collection<DynamicContainer> tests()
+	public Collection<DynamicContainer> testTemplates()
 	{
 		Collection<DynamicContainer> testContainers = new ArrayList<>();
 		Collection<Serializable> annotationClasses = readFile(ParameterizedConstructorAnnotationProcessor.DATA_FILE_LOCATION);
@@ -81,7 +81,7 @@ public class ParameterizedConstructorTests extends AbstractTests
 				for (Constructor<?> constructor : argumentsMap.keySet())
 				{
 					List<Arguments> arguments = argumentsMap.get(constructor);
-					Preconditions.condition(!arguments.isEmpty(), () -> format("Annotation @%s must be used with one or more annotations @*Source",
+					Preconditions.condition(!arguments.isEmpty(), () -> format("Annotation @%s must be used with one or more @*Source annotations",
 							ParameterizedConstructor.class.getSimpleName()));
 					
 					@SuppressWarnings("rawtypes")
@@ -103,7 +103,7 @@ public class ParameterizedConstructorTests extends AbstractTests
 					}
 				}
 			}
-			catch (NoSuchMethodException | SecurityException e)
+			catch (NoSuchMethodException | SecurityException | IOException e)
 			{
 				LOG.warn(e, () -> "Error has acquired while class " + entry.getKey() + " processing");
 			}
@@ -254,11 +254,9 @@ public class ParameterizedConstructorTests extends AbstractTests
 		};
 	}
 	
-	private static Random random = new Random();
-	
-	private <T, E extends T> Constructor<E> generateSubtype(SubClassProducer producer, Class<?>[] params) throws NoSuchMethodException, SecurityException
+	private Constructor<?> generateSubtype(SubClassProducer<?> producer, Class<?>[] params) throws NoSuchMethodException, SecurityException
 	{
-		Class<E> subclass = (Class<E>) producer.get(Integer.toString(random.nextInt(Integer.MAX_VALUE)), params);
+		Class<?> subclass = producer.get(params);
 		return subclass.getConstructor(params);
 	}
 	
