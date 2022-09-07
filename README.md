@@ -54,6 +54,7 @@ Add in your pom.xml these modifications
 			<version>2.22.2</version>
 			<configuration>
 				<dependenciesToScan>
+					<!-- run junit-tests from dependency -->
 					<dependency>name.bychkov:junit5-tests</dependency>
 				</dependenciesToScan>
 			</configuration>
