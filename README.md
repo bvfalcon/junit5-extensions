@@ -50,24 +50,6 @@ Add in your pom.xml these modifications
 	<plugins>
 		...
 		<plugin>
-			<artifactId>maven-compiler-plugin</artifactId>
-			<version>3.10.1</version>
-			<executions>
-				<execution>
-					<id>default-testCompile</id>
-					<configuration>
-						<annotationProcessorPaths>
-							<path>
-								<groupId>name.bychkov</groupId>
-								<artifactId>junit5-tests</artifactId>
-								<version>1.0-SNAPSHOT</version>
-							</path>
-						</annotationProcessorPaths>
-					</configuration>
-				</execution>
-			</executions>
-		</plugin>
-		<plugin>
 			<artifactId>maven-surefire-plugin</artifactId>
 			<version>2.22.2</version>
 			<configuration>
@@ -81,8 +63,7 @@ Add in your pom.xml these modifications
 ```
 
 Notes:
-1. maven-compiler-plugin must have version >= 3.5.0
-2. maven-surefire-plugin must have version >= 2.22.0
+1. maven-surefire-plugin must have version >= 2.22.0
 
 # Features
 
