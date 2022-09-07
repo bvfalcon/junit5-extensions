@@ -195,6 +195,17 @@ public class ParameterizedConstructorAnnotationProcessor extends AbstractProcess
 		return type;
 	}
 	
+	private String getType(com.sun.tools.javac.code.Type.ClassType klass)
+	{
+		String type = klass.tsym.toString();
+		TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(type);
+		if (typeElement != null)
+		{
+			type = processingEnv.getElementUtils().getBinaryName(typeElement).toString();
+		}
+		return type;
+	}
+	
 	private ParameterizedConstructorObject join(Element element, List<AnnotationMirror> dataSourceAnnotations)
 	{
 		ParameterizedConstructorObject object = new ParameterizedConstructorObject();
@@ -305,11 +316,18 @@ public class ParameterizedConstructorAnnotationProcessor extends AbstractProcess
 	private String[] getAnnotationOptionalArrayAttribute(Map<String, Object> annotationParameters, String attribute, String[] defaultValue)
 	{
 		List<AnnotationValue> list = (List<AnnotationValue>) annotationParameters.get(attribute);
-		if (list == null)
+		if (list == null || list.isEmpty())
 		{
 			return defaultValue;
 		}
-		return list.stream().map(AnnotationValue::getValue).map(Object::toString).toArray(String[]::new);
+		if (list.get(0).getValue() instanceof com.sun.tools.javac.code.Type.ClassType)
+		{
+			return list.stream().map(AnnotationValue::getValue).map(o -> (com.sun.tools.javac.code.Type.ClassType) o).map(this::getType).toArray(String[]::new);
+		}
+		else
+		{
+			return list.stream().map(AnnotationValue::getValue).map(Object::toString).toArray(String[]::new);
+		}
 	}
 	
 	private String getAnnotationOptionalAttribute(Map<String, Object> annotationParameters, String attribute)

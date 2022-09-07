@@ -87,11 +87,13 @@ public abstract class TemplateTest
 	}
 	
 	@ParameterizedConstructor
-	@ValueSource(classes = { Serializable.class, Number.class })
+	@ValueSource(classes = { Serializable.class, Number.class, InnerClass.class })
 	public TemplateTest(Class<?> constructorParameter)
 	{
 		this.constructorParameter = constructorParameter.getSimpleName();
 	}
+	
+	public static class InnerClass {}
 	
 	@ParameterizedConstructor
 	@EnumSource(value = TestEnum1.class)
