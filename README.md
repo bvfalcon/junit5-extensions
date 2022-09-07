@@ -1,7 +1,7 @@
 # JUnit5-Extensions
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/name.bychkov/junit5-extensions/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/name.bychkov/junit5-extensions)
 
-Useful features for testing with JUnit 5: autogenerating tests for reflections, resource bundles, serializable.
+Useful features for testing with JUnit 5: autogenerating tests with test templates, for reflections, resource bundles, serializable.
 
 ## Table fo contents
   * [Minimum requirements](#minimum-requirements)
