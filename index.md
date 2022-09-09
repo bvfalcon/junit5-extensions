@@ -111,7 +111,7 @@ Notes to usage `@ParameterizedConstructor`:
 
 ### More samples
 
-You can find yet another example of usage this annotation [here](./examples/parameterized-constructor).
+You can find yet another example of usage this annotation [here](https://github.com/bvfalcon/junit5-extensions/tree/0.5.1/examples/parameterized-constructor).
 
 ## Safely work with reflections
 
@@ -152,7 +152,7 @@ You can use annotations `@CheckField`, `@CheckFields`, `@CheckMethod` and `@Chec
 
 ### More samples
 
-You can find yet another example of usage this annotations of JUnit5-Extensions [here: examples/reflections](./examples/reflections).
+You can find yet another example of usage this annotations of JUnit5-Extensions [here: examples/reflections](https://github.com/bvfalcon/junit5-extensions/tree/0.5.1/examples/reflections).
 
 ## Safely work with resource bundles
 
@@ -195,7 +195,7 @@ With annotations `@CheckKey`, `@CheckKeys` and `@CheckResourceBundle` you can be
 
 ### More samples
 
-Full example you can find [here: examples/resource-bundle](./examples/resource-bundle).
+Full example you can find [here: examples/resource-bundle](https://github.com/bvfalcon/junit5-extensions/tree/0.5.1/examples/resource-bundle).
 
 ## Check classes for Serializable
 
@@ -216,4 +216,4 @@ When added, this annotation forced to run unit-test for check all classes of `yo
 
 ### More samples
 
-[Here](./examples/serializable/) you can see full examples of usage JUnit5-Extensions annotation `@CheckSerializable`.
+[Here](https://github.com/bvfalcon/junit5-extensions/tree/0.5.1/examples/serializable/) you can see full examples of usage JUnit5-Extensions annotation `@CheckSerializable`.
